@@ -1,0 +1,46 @@
+@startuml ScienceProject
+package geometry {
+  Class Vector {
+    X,Y,Z
+    getLength()
+  }
+
+  Class DistanceCalc {
+    pointToPlane()
+  }
+
+  Class VectorGenerator {
+    randomVector()
+    randomNormalVector()
+    samplePointFromPlane(noise)
+  }
+}
+
+package algorithm {
+  Class CostCalc {
+    CubicPartitionCost(partition)
+  }
+
+  Class GreedyJoining {
+
+  }
+
+  Class GreedyMoving {
+
+  }
+}
+
+package evaluation {
+  Class Evaluater {
+
+  }
+
+  Class TestData {
+
+  }
+
+  Class TestDataGenerator {
+
+  }
+}
+@enduml
