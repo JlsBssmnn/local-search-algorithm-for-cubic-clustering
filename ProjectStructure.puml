@@ -35,15 +35,17 @@ package algorithm {
 
 package evaluation {
   Class Evaluater {
-
+    evaluate(algorithm, testData): planes
   }
 
   Class TestData {
-
+    numOfPlanes
+    planes
+    points
   }
 
   Class TestDataGenerator {
-
+    generateData(numOfPlanes, pointsPerPlane)
   }
 }
 
