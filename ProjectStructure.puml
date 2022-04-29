@@ -3,15 +3,18 @@ package geometry {
   Class Vector {
     X,Y,Z
     getLength()
+    scalarMultiplication()
+    addVector()
+    Equal()
   }
 
-  Class DistanceCalc {
-    pointToPlane()
+  Class Utils {
+    DistanceFromPlane()
   }
 
   Class VectorGenerator {
     randomVector()
-    randomNormalVector()
+    randomUnitVector()
     samplePointFromPlane(noise)
   }
 }
@@ -41,6 +44,17 @@ package evaluation {
 
   Class TestDataGenerator {
 
+  }
+}
+
+package utils {
+  Class NormalDist {
+  }
+
+  Class Utilities {
+    RandomFloat()
+    RandomInt()
+    FloatFromNormalDist()
   }
 }
 @enduml

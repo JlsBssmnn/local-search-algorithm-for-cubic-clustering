@@ -1,0 +1,36 @@
+package geometry
+
+import (
+	"math"
+)
+
+// A Vector in a 3D real-valued vectorspace
+type Vector struct {
+	X float64
+	Y float64
+	Z float64
+}
+
+// Get the length of the vector
+func (v *Vector) GetLength() float64 {
+	return math.Sqrt(math.Pow(v.X, 2) + math.Pow(v.Y, 2) + math.Pow(v.Z, 2))
+}
+
+// Multiply the vector with a scalar value
+func (v *Vector) ScalarMultiplication(scalar float64) {
+	v.X *= scalar
+	v.Y *= scalar
+	v.Z *= scalar
+}
+
+// Vector addition
+func (v *Vector) AddVector(vector Vector) {
+	v.X += vector.X
+	v.Y += vector.Y
+	v.Z += vector.Z
+}
+
+// Compare the 3 coordinates of the vectors and return if all of them are equal
+func EqualVector(v1, v2 Vector) bool {
+	return v1.X == v2.X && v1.Y == v2.Y && v1.Z == v2.Z
+}
