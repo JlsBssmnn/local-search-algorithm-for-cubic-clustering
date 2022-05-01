@@ -34,3 +34,8 @@ func (v *Vector) AddVector(vector Vector) {
 func EqualVector(v1, v2 Vector) bool {
 	return v1.X == v2.X && v1.Y == v2.Y && v1.Z == v2.Z
 }
+
+// Computes the distance between the two given vectors
+func VectorDist(v1, v2 Vector) float64 {
+	return math.Sqrt(math.Pow(v1.X-v2.X, 2) + math.Pow(v1.Y-v2.Y, 2) + math.Pow(v1.Z-v2.Z, 2))
+}
