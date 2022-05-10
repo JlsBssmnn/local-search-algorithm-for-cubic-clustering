@@ -41,8 +41,21 @@ func TestGenerateDataWithNoise(t *testing.T) {
 			data.planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
 			point),
 			delta,
-			`It should basically be impossible for a point to be really close to it's 
+			`It should basically be impossible for a point to be really close to it's
 			 corresponding plane`,
+		)
+	}
+
+	noise = utils.NormalDist{Mean: 0, Stddev: 0}
+	data = GenerateDataWithNoise(nPlanes, pointsPerPlane, noise)
+
+	for i, point := range data.points {
+		assert.InDelta(t, 0.0, geometry.DistFromPlane(
+			data.planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
+			point),
+			delta,
+			`If mu and sigma are 0 in the normal distribution, then every sampled point
+			 should be on it's corresponding plane`,
 		)
 	}
 }

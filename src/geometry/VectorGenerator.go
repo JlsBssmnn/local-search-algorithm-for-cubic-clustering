@@ -44,11 +44,12 @@ func SamplePointFromPlane(planeNormalVector Vector) Vector {
 func SamplePointFromPlaneWithNoise(planeNormalVector Vector, noise utils.NormalDist) Vector {
 	distance := utils.FloatFromNormalDist(noise)
 
+	// add this vector to a sampled point from the plane
+	point := SamplePointFromPlane(planeNormalVector)
+
 	// scale the planeNormalVector s.t. it has the length of the distance we want to move
 	planeNormalVector.ScalarMultiplication(distance / planeNormalVector.GetLength())
 
-	// add this vector to a sampled point from the plane
-	point := SamplePointFromPlane(planeNormalVector)
 	point.AddVector(planeNormalVector)
 
 	return point
