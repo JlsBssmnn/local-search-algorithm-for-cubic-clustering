@@ -10,6 +10,7 @@ package geometry {
 
   Class Utils {
     DistanceFromPlane()
+    CoordinateReprToNormalVec()
   }
 
   Class VectorGenerator {
@@ -19,11 +20,43 @@ package geometry {
   }
 }
 
-package algorithm {
-  Class CostCalc {
-    CubicPartitionCost(partition)
+package partitioning3D {
+  package evaluation {
+    Class Evaluater {
+      evaluate(algorithm, testData): planes
+    }
+
+    Class TestData {
+      numOfPlanes
+      planes
+      points
+    }
+
+    Class TestDataGenerator {
+      generateData(numOfPlanes, pointsPerPlane)
+    }
+  }
+  
+  Class CostCalculator {
+    TripleCost()
+    GetMaxDist()
   }
 
+  Class Output {
+    numberOfPlanes
+    planes
+  }
+
+  Class Partitioning3D {
+    createOutput(partitioning)
+    fitPlane()
+  }
+}
+
+package algorithm {
+  Class CubicPartitioning {
+    CubicPartitionCost(partition)
+  }
   Class GreedyJoining {
 
   }
@@ -33,21 +66,7 @@ package algorithm {
   }
 }
 
-package evaluation {
-  Class Evaluater {
-    evaluate(algorithm, testData): planes
-  }
 
-  Class TestData {
-    numOfPlanes
-    planes
-    points
-  }
-
-  Class TestDataGenerator {
-    generateData(numOfPlanes, pointsPerPlane)
-  }
-}
 
 package utils {
   Class NormalDist {

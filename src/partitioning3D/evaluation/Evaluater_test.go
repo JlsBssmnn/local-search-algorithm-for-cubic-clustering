@@ -3,16 +3,16 @@ package evaluation
 import (
 	"testing"
 
-	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEvaluate(t *testing.T) {
-	algorithm1 := func(testData TestData) algorithm.Output {
-		return algorithm.Output{NumOfPlanes: testData.numOfPlanes}
+	algorithm1 := func(testData TestData) partitioning3D.Output {
+		return partitioning3D.Output{NumOfPlanes: testData.numOfPlanes}
 	}
-	algorithm2 := func(testData TestData) algorithm.Output {
-		return algorithm.Output{NumOfPlanes: testData.numOfPlanes + 5}
+	algorithm2 := func(testData TestData) partitioning3D.Output {
+		return partitioning3D.Output{NumOfPlanes: testData.numOfPlanes + 5}
 	}
 
 	testData := GenerateDataWithoutNoise(10, 10)
