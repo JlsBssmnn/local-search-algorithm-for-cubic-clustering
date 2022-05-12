@@ -1,6 +1,7 @@
 package partitioning3D
 
 import (
+	"fmt"
 	"testing"
 
 	g "github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
@@ -55,4 +56,29 @@ func TestTripleCost(t *testing.T) {
 		delta,
 		"The points are all in the fitted plane",
 	)
+}
+
+func BenchmarkTripleCost(b *testing.B) {
+	testTable := []struct {
+		threshold, amplification float64
+	}{
+		{1, 1},
+		{1, 2.5},
+		{1, 19.2151},
+		{4.21, 1},
+		{198.912, 1},
+		{9812.5123, 912385.123516},
+	}
+
+	for _, v := range testTable {
+		b.Run(fmt.Sprintf("Threshold: %f, Amplification: %f", v.threshold, v.amplification), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				b.StopTimer()
+				calc := CostCalculator{Threshold: v.threshold, Amplification: v.amplification}
+				v1, v2, v3 := g.CreateRandomVec(), g.CreateRandomVec(), g.CreateRandomVec()
+				b.StartTimer()
+				calc.TripleCost(v1, v2, v3)
+			}
+		})
+	}
 }

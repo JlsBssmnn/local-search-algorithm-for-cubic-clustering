@@ -1,6 +1,7 @@
 package evaluation
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -57,5 +58,15 @@ func TestGenerateDataWithNoise(t *testing.T) {
 			`If mu and sigma are 0 in the normal distribution, then every sampled point
 			 should be on it's corresponding plane`,
 		)
+	}
+}
+
+func BenchmarkDataCreation(b *testing.B) {
+	for _, v := range testTable {
+		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				GenerateDataWithNoise(v.numOfPlanes, v.pointsPerPlane, utils.NormalDist{Mean: 0, Stddev: 0})
+			}
+		})
 	}
 }
