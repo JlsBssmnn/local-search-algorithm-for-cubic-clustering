@@ -8,18 +8,25 @@ import (
 )
 
 func TestFitPlane(t *testing.T) {
-	plane := FitPlane(g.Vector{X: 5, Y: 5, Z: 5}, g.Vector{X: 6, Y: 6, Z: 3}, g.Vector{X: 4, Y: 4, Z: 7})
-	assert.InDelta(t, 1, plane.X, delta, "P1 is on the plane, P2 and P3 are one normalvector away from P1")
-	assert.InDelta(t, 1, plane.Y, delta, "P1 is on the plane, P2 and P3 are one normalvector away from P1")
-	assert.InDelta(t, -2, plane.Z, delta, "P1 is on the plane, P2 and P3 are one normalvector away from P1")
+	p1 := g.Vector{X: 1, Y: 0, Z: 0}
+	p2 := g.Vector{X: 0, Y: 1, Z: 0}
+	p3 := g.Vector{X: 0, Y: 0, Z: 1}
+	plane := FitPlane(p1, p2, p3)
+	assert.Less(t, 0.1, g.DistFromPlane(plane, p1), delta, "There is no plane which contains all the points")
+	assert.Less(t, 0.1, g.DistFromPlane(plane, p1), delta, "There is no plane which contains all the points")
+	assert.Less(t, 0.1, g.DistFromPlane(plane, p1), delta, "There is no plane which contains all the points")
 
 	plane = FitPlane(g.Vector{X: 0, Y: 0, Z: 5}, g.Vector{X: 0, Y: 0, Z: -3}, g.Vector{X: 0, Y: 0, Z: 7})
 	assert.InDelta(t, 1, plane.X, delta, "All points are on the z-axis")
 	assert.InDelta(t, 0, plane.Y, delta, "All points are on the z-axis")
 	assert.InDelta(t, 0, plane.Z, delta, "All points are on the z-axis")
 
-	plane = FitPlane(g.Vector{X: 4, Y: 1, Z: 2}, g.Vector{X: -13, Y: 2, Z: -3}, g.Vector{X: 0, Y: 3, Z: 2})
-	assert.InDelta(t, 1, plane.X, delta, "All points are one a plane that goes through the origin")
-	assert.InDelta(t, 2, plane.Y, delta, "All points are one a plane that goes through the origin")
-	assert.InDelta(t, -3, plane.Z, delta, "All points are one a plane that goes through the origin")
+	p1 = g.Vector{X: 4, Y: 1, Z: 2}
+	p2 = g.Vector{X: -13, Y: 2, Z: -3}
+	p3 = g.Vector{X: 0, Y: 3, Z: 2}
+
+	plane = FitPlane(p1, p2, p3)
+	assert.InDelta(t, 0, g.DistFromPlane(plane, p1), delta, "All points are one a plane that goes through the origin")
+	assert.InDelta(t, 0, g.DistFromPlane(plane, p2), delta, "All points are one a plane that goes through the origin")
+	assert.InDelta(t, 0, g.DistFromPlane(plane, p3), delta, "All points are one a plane that goes through the origin")
 }

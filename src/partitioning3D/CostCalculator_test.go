@@ -51,7 +51,7 @@ func TestTripleCost(t *testing.T) {
 		delta,
 		"The points are all in the fitted plane",
 	)
-	assert.InDelta(t, 1.7979589711327115,
+	assert.InDelta(t, -8.0,
 		calc.TripleCost(g.Vector{X: 5, Y: 5, Z: 5}, g.Vector{X: 6, Y: 6, Z: 3}, g.Vector{X: 4, Y: 4, Z: 7}),
 		delta,
 		"The points are all in the fitted plane",
