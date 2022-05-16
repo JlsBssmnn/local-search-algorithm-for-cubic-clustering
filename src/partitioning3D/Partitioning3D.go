@@ -3,6 +3,7 @@ package partitioning3D
 import (
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -15,46 +16,36 @@ type Output struct {
 // to find the best plane that goes through the origin that minimizes
 // the sum of squared distances from the points to the plane
 func FitPlane(points ...geometry.Vector) geometry.Vector {
-	matAList := []float64{}
-	matBList := []float64{}
-	allZero := true
-
-	for _, point := range points {
-		matAList = append(matAList, point.X, point.Y)
-		matBList = append(matBList, point.Z)
-		if point.X != 0 || point.Y != 0 {
-			allZero = false
-		}
-	}
-
-	// if all x and y coordinates of the points are zero the SVD will fail,
-	// so we return the y-z plane as it fits all the points
-	if allZero {
-		return geometry.Vector{X: 1, Y: 0, Z: 0}
-	}
-
 	size := len(points)
-	A := mat.NewDense(size, 2, matAList)
-	b := mat.NewVecDense(size, matBList)
+	matAList := make([]float64, size*3)
 
-	var res mat.Dense
-	if err := res.Solve(A, b); err == nil {
-		return geometry.CoordinateReprToNormalVec(res.At(0, 0), res.At(1, 0))
+	for i := 0; i < size; i++ {
+		matAList[i*3] = points[i].X
+		matAList[i*3+1] = points[i].Y
+		matAList[i*3+2] = points[i].Z
 	}
+	A := mat.NewDense(size, 3, matAList)
 
-	bMat := mat.NewDense(size, 1, matBList)
+	var M mat.Dense
+	M.Mul(A.T(), A)
+	A = nil
 
 	var svd mat.SVD
-	ok := svd.Factorize(A, mat.SVDFull)
+	ok := svd.Factorize(&M, mat.SVDFull)
 	if !ok {
 		panic("Failed to factorize")
 	}
+	singularValues := svd.Values(nil)
 
-	rank := svd.Rank(1e-15)
-	var x mat.Dense
-	svd.SolveTo(&x, bMat, rank)
+	var u mat.Dense
+	svd.UTo(&u)
 
-	return geometry.CoordinateReprToNormalVec(x.At(0, 0), x.At(1, 0))
+	i := utils.ArgMin(singularValues)
+	x := u.At(0, i)
+	y := u.At(1, i)
+	z := u.At(2, i)
+
+	return geometry.Vector{X: x, Y: y, Z: z}
 }
 
 // This function calculates output from a given partition, that is the number

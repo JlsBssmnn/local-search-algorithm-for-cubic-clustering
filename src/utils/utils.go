@@ -36,7 +36,9 @@ func Contains[T comparable](slice []T, element T) bool {
 	return false
 }
 
-// Return the index of the smallest elemnt in the slice
+// Returns the index of the smallest element in the slice.
+// If multiple elements are the smallest then the index of the
+// first element will be returned.
 func ArgMin[T Numeric](slice []T) int {
 	smallest := slice[0]
 	index := 0
