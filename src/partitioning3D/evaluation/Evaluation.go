@@ -9,7 +9,7 @@ import (
 )
 
 // This is the function signiture of a partitioning algorithm for 3D Vectors
-type PartAlgorithm func([]geometry.Vector, alg.CostCalculator[geometry.Vector]) alg.Partitioning[geometry.Vector]
+type PartAlgorithm func(*[]geometry.Vector, alg.CostCalculator[geometry.Vector]) alg.PartitioningArray
 
 // The output after an evaluation of an algorithm
 type Evaluation struct {
@@ -24,19 +24,17 @@ func Evaluate(algorithm string, costCalc alg.CostCalculator[geometry.Vector], nu
 	testData := GenerateDataWithNoise(numOfPlanes, pointsPerPlane, noise)
 
 	switch algorithm {
-	case "GreedyJoiningV1":
-		return EvaluateAlgorithm(alg.GeedyJoiningV1[geometry.Vector], costCalc, testData)
-	case "GreedyJoiningV2":
-		return EvaluateAlgorithm(alg.GeedyJoiningV2[geometry.Vector], costCalc, testData)
+	case "GreedyJoining":
+		return EvaluateAlgorithm(alg.GeedyJoining[geometry.Vector], costCalc, &testData)
 	default:
 		panic("This algorithm is not supported")
 	}
 }
 
 // Evaluates a given algorithm with the given test data
-func EvaluateAlgorithm(algorithm PartAlgorithm, costCalc alg.CostCalculator[geometry.Vector], testData TestData) Evaluation {
-	part := algorithm(testData.points, costCalc)
-	numOfPlanesError := math.Abs(float64(len(part)-testData.numOfPlanes)) / float64(testData.numOfPlanes)
+func EvaluateAlgorithm(algorithm PartAlgorithm, costCalc alg.CostCalculator[geometry.Vector], testData *TestData) Evaluation {
+	part := algorithm(&testData.points, costCalc)
+	numOfPlanesError := math.Abs(float64(len(utils.ToSet(part))-testData.numOfPlanes)) / float64(testData.numOfPlanes)
 	n := len(testData.points)
 
 	pointsPerPlane := n / len(testData.planes)
@@ -44,21 +42,10 @@ func EvaluateAlgorithm(algorithm PartAlgorithm, costCalc alg.CostCalculator[geom
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
 			samePartition := i/pointsPerPlane == j/pointsPerPlane
-			for _, partition := range part {
-				iIn := utils.Contains(partition, testData.points[i])
-				if !iIn {
-					continue
-				} else if utils.Contains(partition, testData.points[j]) {
-					if samePartition {
-						correctPartitioned++
-					}
-					break
-				} else {
-					if !samePartition {
-						correctPartitioned++
-					}
-					break
-				}
+			if samePartition && part[i] == part[j] {
+				correctPartitioned++
+			} else if !samePartition && part[i] != part[j] {
+				correctPartitioned++
 			}
 		}
 	}

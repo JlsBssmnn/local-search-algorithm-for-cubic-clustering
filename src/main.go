@@ -12,6 +12,7 @@ import (
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D"
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
 )
 
 func main() {
@@ -29,16 +30,33 @@ func main() {
 
 	points := parsePoints(*fileName)
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
-	partitioning := algorithm.GeedyJoiningV2[geometry.Vector](points, calc)
+	partitioningArray := algorithm.GeedyJoining[geometry.Vector](&points, &calc)
+
+	// Order elements by their partition
+	partitioning := make(map[int]utils.LinkedList[int])
+	for i, partition := range partitioningArray {
+		val, ok := partitioning[partition]
+		if ok {
+			val.Add(i)
+		} else {
+			list := utils.LinkedList[int]{}
+			list.Add(i)
+			partitioning[partition] = list
+		}
+	}
 
 	// Output partitioning
 	fmt.Println("--------------")
-	for i, partition := range partitioning {
+	i := 0
+	for _, elements := range partitioning {
 		fmt.Printf("Partition_%d\n", i)
-		for _, vector := range partition {
-			fmt.Printf("X: %f, Y: %f, Z: %f\n", vector.X, vector.Y, vector.Z)
+		iterator := elements.Iterator()
+		for iterator.HasNext() {
+			point := iterator.Next()
+			fmt.Printf("X: %f, Y: %f, Z: %f\n", points[point].X, points[point].Y, points[point].Z)
 		}
 		fmt.Println("--------------")
+		i++
 	}
 }
 

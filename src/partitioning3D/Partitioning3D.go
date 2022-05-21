@@ -1,7 +1,6 @@
 package partitioning3D
 
 import (
-	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
 	"gonum.org/v1/gonum/mat"
@@ -46,17 +45,4 @@ func FitPlane(points ...geometry.Vector) geometry.Vector {
 	z := u.At(2, i)
 
 	return geometry.Vector{X: x, Y: y, Z: z}
-}
-
-// This function calculates output from a given partition, that is the number
-// of planes that were found and the normal vectors for those planes
-func CreateOutputFromPartitioning(partitioning algorithm.Partitioning[geometry.Vector]) Output {
-	planes := []geometry.Vector{}
-
-	// for every partition we create a plane normal vector
-	for _, partition := range partitioning {
-		planes = append(planes, FitPlane(partition...))
-	}
-
-	return Output{NumOfPlanes: len(planes), Planes: planes}
 }
