@@ -2,6 +2,7 @@ package algorithm
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
@@ -178,6 +179,17 @@ func (costs *Costs) Min2D(i int, bestJoinOverall *[2]int, bestJoinCostOverall *f
 	}
 }
 
+// Updates the partitioning array to the join of the two partitions part1 and part2
+func (algorithm *GreedyJoiningAlgorithm[data]) updatePartitioningArray(part1, part2 int) {
+	for i, part := range algorithm.partitioning {
+		if part == part2 {
+			algorithm.partitioning[i] = part1
+		} else if part > part2 {
+			algorithm.partitioning[i]--
+		}
+	}
+}
+
 // --------------------------
 
 // This function can be used to get a GreedyJoiningAlgorithm struct outside of this package,
@@ -265,18 +277,14 @@ func (algorithm *GreedyJoiningAlgorithm[data]) Join(part1, part2 int) ([2]int, f
 	// partition which is not stored in the data structure
 	if part1 == len(*algorithm.costs)-1 {
 		*algorithm.costs = (*algorithm.costs)[:part1]
+		algorithm.updatePartitioningArray(part1, part2)
 		return bestJoinOverall, bestJoinCostOverall
 	}
 	algorithm.joinStep2(part1, part2, previousJoinCost, &bestJoinOverall, &bestJoinCostOverall)
 	algorithm.joinStep3(part1, part2, previousJoinCost, &bestJoinOverall, &bestJoinCostOverall)
 	algorithm.joinStep4(part1, part2, previousJoinCost, &bestJoinOverall, &bestJoinCostOverall)
 
-	// update partitioning array
-	for i, part := range algorithm.partitioning {
-		if part == part2 {
-			algorithm.partitioning[i] = part1
-		}
-	}
+	algorithm.updatePartitioningArray(part1, part2)
 
 	return bestJoinOverall, bestJoinCostOverall
 }
@@ -400,12 +408,15 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep2(part1, part2 int, previ
 		if j < index2DPart2 {
 			costAlreadyCalculated = twoPartitionsCosts[j].tripleJoinCosts != nil
 		} else {
-			costAlreadyCalculated = twoPartitionsCosts[algorithm.costs.GetIndex(part1, part2)] != nil
+			costAlreadyCalculated = twoPartitionsCosts[algorithm.costs.GetIndex(part1, part2)].tripleJoinCosts != nil
 		}
 
 		if costAlreadyCalculated {
 			// the new join cost has already been calculated
-			tripleCost, _ := algorithm.costs.TripleJoinCost(part1, jPartition, part2)
+			tripleCost, err := algorithm.costs.TripleJoinCost(part1, jPartition, part2)
+			if err != nil {
+				panic(fmt.Errorf("The algorithm tried to access triple costs for partitions %d, %d and %d, but these costs weren't present!", part1, part2, jPartition))
+			}
 			twoPartitionsCosts[j].joinCost = tripleCost - previousJoinCost
 			twoPartitionsCosts[j].tripleJoinCosts = nil
 		} else {

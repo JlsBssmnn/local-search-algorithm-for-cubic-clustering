@@ -60,3 +60,22 @@ func TestIterator(t *testing.T) {
 		iter.Next()
 	})
 }
+
+func TestWithVectors(t *testing.T) {
+	partitioningArray := []int{0, 0, 0, 0, 0, 0, 0, 1, 2}
+
+	partitioning := make(map[int]*LinkedList[int])
+	for i, partition := range partitioningArray {
+		val, ok := partitioning[partition]
+		if ok {
+			length := val.Length()
+			val.Add(i)
+			assert.Equal(t, length+1, partitioning[partition].length)
+		} else {
+			list := LinkedList[int]{}
+			list.Add(i)
+			partitioning[partition] = &list
+			assert.Equal(t, 1, partitioning[partition].length)
+		}
+	}
+}

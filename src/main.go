@@ -33,7 +33,7 @@ func main() {
 	partitioningArray := algorithm.GeedyJoining[geometry.Vector](&points, &calc)
 
 	// Order elements by their partition
-	partitioning := make(map[int]utils.LinkedList[int])
+	partitioning := make(map[int]*utils.LinkedList[int])
 	for i, partition := range partitioningArray {
 		val, ok := partitioning[partition]
 		if ok {
@@ -41,7 +41,7 @@ func main() {
 		} else {
 			list := utils.LinkedList[int]{}
 			list.Add(i)
-			partitioning[partition] = list
+			partitioning[partition] = &list
 		}
 	}
 
