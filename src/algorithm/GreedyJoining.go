@@ -490,3 +490,87 @@ func GeedyJoining[data any](input *[]data, calc CostCalculator[data]) Partitioni
 	}
 	return algorithm.partitioning
 }
+
+// This is GreedyJoiningV2 from tag v1.0 on master
+func GeedyJoiningOld[data any](input []data, calc CostCalculator[data]) Partitioning[data] {
+	// the initial partitioning starts with singleton sets
+	var part Partitioning[data] = [][]data{}
+	for _, point := range input {
+		part = append(part, []data{point})
+	}
+	cost := CubicPartitionCost(part, calc)
+
+	// find {B,C} or {B,C,D} that minimize the cost when joining them
+	for {
+		nextCost := math.Inf(1) // costs for the next partition which arises from joining 2 partitions
+		bestCost := math.Inf(1) // the best found cost for joining either 2 or 3 partitions
+		B, C := -1, -1
+
+		for i := 0; i < len(part); i++ {
+			for j := i + 1; j < len(part); j++ {
+				// both partitions have one element, so we must consider 3 partitions
+				// for the join
+				if len(part[i]) == 1 && len(part[j]) == 1 {
+					for k := j + 1; k < len(part); k++ {
+						newPart := joinPartitions(part, i, j, k)
+						joinCost := CubicPartitionCost(newPart, calc)
+
+						if joinCost < bestCost {
+							B = i
+							C = j
+							bestCost = joinCost
+							nextCost = cost
+						}
+					}
+				} else { // else both partitions have in sum at least 3 elements
+					newPart := joinPartitions(part, i, j)
+					joinCost := CubicPartitionCost(newPart, calc)
+
+					if joinCost < bestCost {
+						B = i
+						C = j
+						bestCost = joinCost
+						nextCost = joinCost
+					}
+				}
+			}
+		}
+
+		// There aren't enough partitions to find a join so just
+		// return the best found partitioning
+		if B == -1 || C == -1 {
+			return part
+		}
+
+		if bestCost-cost < 0 {
+			cost = nextCost
+			part = joinPartitions(part, B, C)
+			continue
+		} else {
+			break
+		}
+	}
+
+	return part
+}
+
+// This function takes a partitioning and joins all the partitions at the given indicies
+func joinPartitions[data any](partitioning Partitioning[data], partitions ...int) Partitioning[data] {
+	join := []data{}
+	for _, index := range partitions {
+		join = append(join, partitioning[index]...)
+	}
+
+	joinAdded := false
+	newPartitioning := [][]data{}
+	for i, partition := range partitioning {
+		if !utils.Contains(partitions, i) {
+			newPartitioning = append(newPartitioning, partition)
+		} else if !joinAdded {
+			newPartitioning = append(newPartitioning, join)
+			joinAdded = true
+		}
+	}
+
+	return newPartitioning
+}
