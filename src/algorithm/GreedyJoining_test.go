@@ -143,9 +143,10 @@ func TestJoinPart1is0(t *testing.T) {
 func TestPartsInMiddle(t *testing.T) {
 	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
 
-	costs, _, _ := InitializeCosts[string](&dataPoints, CharCostCalc{})
-	algorithm := GreedyJoiningAlgorithm[string]{costs: &costs, input: &dataPoints, calc: &CharCostCalc{}, partitioning: []int{}}
+	algorithm := GetAlgorithm[string](&dataPoints, &CharCostCalc{})
+	algorithm.InitializeAlgorithm()
 	bestJoin, bestCost := algorithm.Join(5, 8)
+	costs := *algorithm.costs
 
 	assert.Equal(t, 0, bestJoin[0], "Next join with cost -1 is between the partitions 0 and 3")
 	assert.Equal(t, 3, bestJoin[1], "Next join with cost -1 is between the partitions 0 and 3")

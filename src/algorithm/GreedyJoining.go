@@ -317,19 +317,16 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 				// the current partition in the second dimension
 				secondElement := i + j + 1
 
-				// jPartition is the partition that j corresponds to
-				jPartition := i + j + 1
-
 				// Access cache
 				costI, ok := cache[i]
 				if !ok {
 					costI = algorithm.costs.RealJoinCost(i, part1) + algorithm.costs.RealJoinCost(i, part2) + algorithm.TripleCost3Part(i, part1, part2)
 					cache[i] = costI
 				}
-				costJ, ok := cache[jPartition]
+				costJ, ok := cache[secondElement]
 				if !ok {
-					costJ = algorithm.costs.RealJoinCost(jPartition, part1) + algorithm.costs.RealJoinCost(jPartition, part2) + algorithm.TripleCost3Part(jPartition, part1, part2)
-					cache[jPartition] = costJ
+					costJ = algorithm.costs.RealJoinCost(secondElement, part1) + algorithm.costs.RealJoinCost(secondElement, part2) + algorithm.TripleCost3Part(secondElement, part1, part2)
+					cache[secondElement] = costJ
 				}
 
 				// Triple costs that are already calculated
