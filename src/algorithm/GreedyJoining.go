@@ -332,20 +332,16 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 					cache[jPartition] = costJ
 				}
 
-				// all triple costs that will be added to get the new cost
-				triplesToConsider := [2][3]int{{i, secondElement, part1}, {i, secondElement, part2}}
+				// Triple costs that are already calculated
+				tripleCostPart1, err1 := algorithm.costs.TripleJoinCost(i, secondElement, part1)
+				tripleCostPart2, err2 := algorithm.costs.TripleJoinCost(i, secondElement, part2)
+
+				if err1 != nil || err2 != nil {
+					panic("Tried to access triple costs that don't exist!")
+				}
 
 				// update the cost for join with part1
-				newTripleCost := costI + costJ +
-					utils.MapSum(triplesToConsider[:],
-						func(element [3]int) float64 {
-							cost, err := algorithm.costs.TripleJoinCost(element[0], element[1], element[2])
-							if err != nil {
-								panic("Tried to access triple costs that don't exist!")
-							}
-							return cost
-						},
-					)
+				newTripleCost := costI + costJ + tripleCostPart1 + tripleCostPart2
 				(*triples)[index3DPart1] = newTripleCost
 
 				// delete cost for join with part2 in third dimension
@@ -497,88 +493,4 @@ func GreedyJoining[data any](input *[]data, calc CostCalculator[data]) Partition
 		nextJoin, cost = algorithm.Join(nextJoin[0], nextJoin[1])
 	}
 	return algorithm.partitioning
-}
-
-// This is GreedyJoiningV2 from tag v1.0 on master
-func GreedyJoiningOld[data any](input []data, calc CostCalculator[data]) Partitioning[data] {
-	// the initial partitioning starts with singleton sets
-	var part Partitioning[data] = [][]data{}
-	for _, point := range input {
-		part = append(part, []data{point})
-	}
-	cost := CubicPartitionCost(part, calc)
-
-	// find {B,C} or {B,C,D} that minimize the cost when joining them
-	for {
-		nextCost := math.Inf(1) // costs for the next partition which arises from joining 2 partitions
-		bestCost := math.Inf(1) // the best found cost for joining either 2 or 3 partitions
-		B, C := -1, -1
-
-		for i := 0; i < len(part); i++ {
-			for j := i + 1; j < len(part); j++ {
-				// both partitions have one element, so we must consider 3 partitions
-				// for the join
-				if len(part[i]) == 1 && len(part[j]) == 1 {
-					for k := j + 1; k < len(part); k++ {
-						newPart := joinPartitions(part, i, j, k)
-						joinCost := CubicPartitionCost(newPart, calc)
-
-						if joinCost < bestCost {
-							B = i
-							C = j
-							bestCost = joinCost
-							nextCost = cost
-						}
-					}
-				} else { // else both partitions have in sum at least 3 elements
-					newPart := joinPartitions(part, i, j)
-					joinCost := CubicPartitionCost(newPart, calc)
-
-					if joinCost < bestCost {
-						B = i
-						C = j
-						bestCost = joinCost
-						nextCost = joinCost
-					}
-				}
-			}
-		}
-
-		// There aren't enough partitions to find a join so just
-		// return the best found partitioning
-		if B == -1 || C == -1 {
-			return part
-		}
-
-		if bestCost-cost < 0 {
-			cost = nextCost
-			part = joinPartitions(part, B, C)
-			continue
-		} else {
-			break
-		}
-	}
-
-	return part
-}
-
-// This function takes a partitioning and joins all the partitions at the given indicies
-func joinPartitions[data any](partitioning Partitioning[data], partitions ...int) Partitioning[data] {
-	join := []data{}
-	for _, index := range partitions {
-		join = append(join, partitioning[index]...)
-	}
-
-	joinAdded := false
-	newPartitioning := [][]data{}
-	for i, partition := range partitioning {
-		if !utils.Contains(partitions, i) {
-			newPartitioning = append(newPartitioning, partition)
-		} else if !joinAdded {
-			newPartitioning = append(newPartitioning, join)
-			joinAdded = true
-		}
-	}
-
-	return newPartitioning
 }
