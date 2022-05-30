@@ -30,7 +30,7 @@ func main() {
 
 	points := parsePoints(*fileName)
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
-	partitioningArray := algorithm.GeedyJoining[geometry.Vector](&points, &calc)
+	partitioningArray := algorithm.GreedyJoining[geometry.Vector](&points, &calc)
 
 	// Order elements by their partition
 	partitioning := make(map[int]*utils.LinkedList[int])

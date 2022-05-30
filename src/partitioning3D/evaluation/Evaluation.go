@@ -25,7 +25,7 @@ func Evaluate(algorithm string, costCalc alg.CostCalculator[geometry.Vector], nu
 
 	switch algorithm {
 	case "GreedyJoining":
-		return EvaluateAlgorithm(alg.GeedyJoining[geometry.Vector], costCalc, &testData)
+		return EvaluateAlgorithm(alg.GreedyJoining[geometry.Vector], costCalc, &testData)
 	default:
 		panic("This algorithm is not supported")
 	}

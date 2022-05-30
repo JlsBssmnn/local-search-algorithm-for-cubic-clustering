@@ -71,9 +71,13 @@ func (costs *Costs) JoinCost(i, j int) (float64, bool) {
 
 	join := (*((*costs)[i]).twoPartitionsCosts[j-i-1])
 
+	if join.tripleJoinCosts != nil && len(*join.tripleJoinCosts) == 0 {
+		return math.Inf(1), true
+	}
 	return join.joinCost, join.tripleJoinCosts != nil
 }
 
+// Extracts the real cost for joining i and j. If they are both one-elementary, 0 is returned.
 func (costs *Costs) RealJoinCost(i, j int) float64 {
 	cost, future := (*costs).JoinCost(i, j)
 	if future {
@@ -99,7 +103,7 @@ func (costs *Costs) Delete2D(i, j int) {
 	(*(*costs)[i]).twoPartitionsCosts = append((*(*costs)[i]).twoPartitionsCosts[:index], (*(*costs)[i]).twoPartitionsCosts[index+1:]...)
 }
 
-// Deletes the costs for the kth partition in the third dimension for
+// Deletes the costs for partition k in the third dimension for
 // the join of partition i and j
 func (costs *Costs) Delete3D(i, j, k int) {
 	index2D := costs.GetIndex(i, j)
@@ -119,6 +123,8 @@ func (costs *Costs) Delete3D(i, j, k int) {
 			twoPartitionsCosts.joinCost = joinCost
 			twoPartitionsCosts.bestJoin = bestJoin
 		}
+	} else if twoPartitionsCosts.bestJoin > index3D {
+		twoPartitionsCosts.bestJoin = twoPartitionsCosts.bestJoin - 1
 	}
 }
 
@@ -291,6 +297,8 @@ func (algorithm *GreedyJoiningAlgorithm[data]) Join(part1, part2 int) ([2]int, f
 
 func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previousJoinCost float64,
 	bestJoinOverall *[2]int, bestJoinCostOverall *float64) {
+	// Cache that stores join(i, part1) + join(i, part2) + TripleCost3Part(i, part1, part2) with i being the key
+	cache := make(map[int]float64)
 	// loop through first dimension until part1
 	for i := 0; i < part1; i++ {
 
@@ -309,23 +317,35 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 				// the current partition in the second dimension
 				secondElement := i + j + 1
 
+				// jPartition is the partition that j corresponds to
+				jPartition := i + j + 1
+
+				// Access cache
+				costI, ok := cache[i]
+				if !ok {
+					costI = algorithm.costs.RealJoinCost(i, part1) + algorithm.costs.RealJoinCost(i, part2) + algorithm.TripleCost3Part(i, part1, part2)
+					cache[i] = costI
+				}
+				costJ, ok := cache[jPartition]
+				if !ok {
+					costJ = algorithm.costs.RealJoinCost(jPartition, part1) + algorithm.costs.RealJoinCost(jPartition, part2) + algorithm.TripleCost3Part(jPartition, part1, part2)
+					cache[jPartition] = costJ
+				}
+
 				// all triple costs that will be added to get the new cost
-				triplesToConsider := [4][3]int{{i, secondElement, part1}, {i, secondElement, part2},
-					{i, part1, part2}, {secondElement, part1, part2}}
-				// all tuple costs which will be substracted to get the new cost
-				tuplesToConsider := [4][2]int{{i, part1}, {i, part2}, {secondElement, part1}, {secondElement, part2}}
+				triplesToConsider := [2][3]int{{i, secondElement, part1}, {i, secondElement, part2}}
 
 				// update the cost for join with part1
-				newTripleCost := utils.MapSum(triplesToConsider[:],
-					func(element [3]int) float64 {
-						cost, _ := algorithm.costs.TripleJoinCost(element[0], element[1], element[2])
-						return cost
-					},
-				) - utils.MapSum(tuplesToConsider[:],
-					func(element [2]int) float64 {
-						return algorithm.costs.RealJoinCost(element[0], element[1])
-					},
-				) - (2 * previousJoinCost)
+				newTripleCost := costI + costJ +
+					utils.MapSum(triplesToConsider[:],
+						func(element [3]int) float64 {
+							cost, err := algorithm.costs.TripleJoinCost(element[0], element[1], element[2])
+							if err != nil {
+								panic("Tried to access triple costs that don't exist!")
+							}
+							return cost
+						},
+					)
 				(*triples)[index3DPart1] = newTripleCost
 
 				// delete cost for join with part2 in third dimension
@@ -363,26 +383,13 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 
 		// delete part2 in every triple cost list
 		for j := index2DPart1 + 1; j < index2DPart2; j++ {
-			twoPartitionsCost := (*algorithm.costs)[i].twoPartitionsCosts[j]
-			tripleJoinCosts := twoPartitionsCost.tripleJoinCosts
+			tripleJoinCosts := (*algorithm.costs)[i].twoPartitionsCosts[j].tripleJoinCosts
 			if tripleJoinCosts != nil {
-				index3DPart2 := part2 - (i + j + 2)
-				*tripleJoinCosts = append((*tripleJoinCosts)[:index3DPart2], (*tripleJoinCosts)[index3DPart2+1:]...)
-				// check if the deleted cost were the minimum
-				if twoPartitionsCost.bestJoin == index3DPart2 {
-					min, argmin := utils.MinAndArgMin(*tripleJoinCosts)
-					twoPartitionsCost.bestJoin = argmin
-					twoPartitionsCost.joinCost = min
-				}
+				algorithm.costs.Delete3D(i, j+i+1, part2)
 			}
 		}
 		// delete part2 in the second dimension
 		algorithm.costs.Delete2D(i, part2)
-		lenItsSupposedToBe := 99 - (100 - len(*algorithm.costs))
-		lenItActuallyIs := len((*algorithm.costs)[0].twoPartitionsCosts)
-		if i == 0 && lenItsSupposedToBe <= lenItActuallyIs {
-			_ = 1
-		}
 
 		algorithm.costs.Min2D(i, bestJoinOverall, bestJoinCostOverall)
 	}
@@ -424,6 +431,7 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep2(part1, part2 int, previ
 			// j, part1 and part2 respectively
 			additionalCost := algorithm.TripleCost3Part(part1, jPartition, part2)
 			twoPartitionsCosts[j].joinCost = algorithm.costs.RealJoinCost(part1, jPartition) + algorithm.costs.RealJoinCost(jPartition, part2) + additionalCost
+			twoPartitionsCosts[j].tripleJoinCosts = nil
 		}
 	}
 	// Delete the costs of part1 with part2 in the second dimension
@@ -480,7 +488,7 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep4(part1, part2 int, previ
 // 	- it will only evaluate joins of 3 partitions if the first 2 contain one element
 // 	- it only joins 2 partitions
 // 	- if there is only one partition left the algorithm terminates
-func GeedyJoining[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
+func GreedyJoining[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
 	// algorithm := Algorithm[data]{input: input, calc: calc}
 	algorithm := GetAlgorithm(input, calc)
 	nextJoin, cost := algorithm.InitializeAlgorithm()
@@ -492,7 +500,7 @@ func GeedyJoining[data any](input *[]data, calc CostCalculator[data]) Partitioni
 }
 
 // This is GreedyJoiningV2 from tag v1.0 on master
-func GeedyJoiningOld[data any](input []data, calc CostCalculator[data]) Partitioning[data] {
+func GreedyJoiningOld[data any](input []data, calc CostCalculator[data]) Partitioning[data] {
 	// the initial partitioning starts with singleton sets
 	var part Partitioning[data] = [][]data{}
 	for _, point := range input {

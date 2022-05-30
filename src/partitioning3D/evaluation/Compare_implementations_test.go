@@ -36,9 +36,9 @@ func testForEquality() bool {
 	testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, utils.NormalDist{Mean: *mean, Stddev: *stddev})
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
 
-	partNew := algorithm.GeedyJoining[geometry.Vector](&testData.points, calc)
+	partNew := algorithm.GreedyJoining[geometry.Vector](&testData.points, calc)
 
-	partOld := algorithm.GeedyJoiningOld[geometry.Vector](testData.points, calc)
+	partOld := algorithm.GreedyJoiningOld[geometry.Vector](testData.points, calc)
 
 	partArrayOld := make([]int, len(partNew))
 	for i, partition := range partOld {

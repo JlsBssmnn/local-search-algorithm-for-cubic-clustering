@@ -37,7 +37,7 @@ func BenchmarkGreedyJoiningWithoutNoise(b *testing.B) {
 		b.StartTimer()
 		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				algorithm.GeedyJoining[geometry.Vector](&testData.points, &calc)
+				algorithm.GreedyJoining[geometry.Vector](&testData.points, &calc)
 			}
 		})
 	}
@@ -52,7 +52,7 @@ func BenchmarkGreedyJoiningWithNoise(b *testing.B) {
 		b.StartTimer()
 		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				algorithm.GeedyJoining[geometry.Vector](&testData.points, &calc)
+				algorithm.GreedyJoining[geometry.Vector](&testData.points, &calc)
 			}
 		})
 	}
