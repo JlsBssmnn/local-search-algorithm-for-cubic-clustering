@@ -39,6 +39,17 @@ func Contains[T comparable](slice []T, element T) bool {
 	return false
 }
 
+// Returns the index of the first occurence of the given
+// element in the given slice. If it's not found -1 is returned.
+func Find[T comparable](slice []T, element T) int {
+	for i, e := range slice {
+		if e == element {
+			return i
+		}
+	}
+	return -1
+}
+
 // Returns the smallest element of the given input slice
 func Min[T Numeric](slice []T) T {
 	smallest := slice[0]

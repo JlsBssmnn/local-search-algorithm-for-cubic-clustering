@@ -11,6 +11,14 @@ type LinkedList[T any] struct {
 	length       int
 }
 
+func CreateLinkedList[T any](initialElements ...T) *LinkedList[T] {
+	list := LinkedList[T]{}
+	for _, element := range initialElements {
+		list.Add(element)
+	}
+	return &list
+}
+
 func (list *LinkedList[T]) Add(element T) {
 	newElement := Node[T]{
 		content: element,
