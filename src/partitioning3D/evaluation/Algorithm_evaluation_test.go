@@ -41,3 +41,21 @@ func TestEvalGreedyJoiningWithNoise(t *testing.T) {
 	fmt.Printf("Greedy Joining on %d planes with %d points per plane gave the following results:\n", *numOfPlanes, *pointsPerPlane)
 	fmt.Printf("\tnumber of planes error: %f%%\n\taccuracy: %f%%\n", eval.NumOfPlanesError*100, eval.Accuracy*100)
 }
+
+func TestEvalGreedyMoving(t *testing.T) {
+	flag.Parse()
+	testData := GenerateDataWithoutNoise(*numOfPlanes, *pointsPerPlane)
+	eval := EvaluateAlgorithm(algorithm.GreedyMoving[geometry.Vector], partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}, &testData)
+
+	fmt.Printf("Greedy Joining on %d planes with %d points per plane gave the following results:\n", *numOfPlanes, *pointsPerPlane)
+	fmt.Printf("\tnumber of planes error: %f%%\n\taccuracy: %f%%\n", eval.NumOfPlanesError*100, eval.Accuracy*100)
+}
+
+func TestEvalGreedyMovingWithNoise(t *testing.T) {
+	flag.Parse()
+	testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, utils.NormalDist{Mean: *mean, Stddev: *stddev})
+	eval := EvaluateAlgorithm(algorithm.GreedyMoving[geometry.Vector], partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}, &testData)
+
+	fmt.Printf("Greedy Joining on %d planes with %d points per plane gave the following results:\n", *numOfPlanes, *pointsPerPlane)
+	fmt.Printf("\tnumber of planes error: %f%%\n\taccuracy: %f%%\n", eval.NumOfPlanesError*100, eval.Accuracy*100)
+}
