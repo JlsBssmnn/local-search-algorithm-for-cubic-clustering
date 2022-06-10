@@ -57,3 +57,32 @@ func BenchmarkGreedyJoiningWithNoise(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkGreedyMovingWithoutNoise(b *testing.B) {
+	calc := partitioning3D.CostCalculator{Threshold: 0.1, Amplification: 1}
+	for _, v := range testTable {
+		b.StopTimer()
+		testData := GenerateDataWithoutNoise(v.numOfPlanes, v.pointsPerPlane)
+		b.StartTimer()
+		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				algorithm.GreedyMoving[geometry.Vector](&testData.points, &calc)
+			}
+		})
+	}
+}
+
+func BenchmarkGreedyMovingWithNoise(b *testing.B) {
+	calc := partitioning3D.CostCalculator{Threshold: 0.1, Amplification: 1}
+	noise := utils.NormalDist{Mean: 0, Stddev: 1}
+	for _, v := range testTable {
+		b.StopTimer()
+		testData := GenerateDataWithNoise(v.numOfPlanes, v.pointsPerPlane, noise)
+		b.StartTimer()
+		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				algorithm.GreedyMoving[geometry.Vector](&testData.points, &calc)
+			}
+		})
+	}
+}
