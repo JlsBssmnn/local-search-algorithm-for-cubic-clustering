@@ -3,6 +3,8 @@ package utils
 import (
 	"math/rand"
 	"sort"
+
+	"golang.org/x/exp/constraints"
 )
 
 type NormalDist struct {
@@ -183,4 +185,33 @@ func ToSet[T comparable](slice []T) []T {
 		}
 	}
 	return set
+}
+
+// Deletes the first occurence of the given element in the slice
+// of the given pointer
+func DeleteByElement[T comparable](slicePtr *[]T, element T) {
+	index := 0
+	for i, e := range *slicePtr {
+		if e == element {
+			index = i
+			break
+		}
+	}
+	*slicePtr = append((*slicePtr)[:index], (*slicePtr)[index+1:]...)
+}
+
+func InsertInOrder[T constraints.Ordered](slicePtr *[]T, element T) {
+	for i, e := range *slicePtr {
+		if e > element {
+			if i == len(*slicePtr)-1 {
+				*slicePtr = append(*slicePtr, (*slicePtr)[i])
+				(*slicePtr)[i] = element
+			} else {
+				*slicePtr = append((*slicePtr)[:i+1], (*slicePtr)[i:]...)
+				(*slicePtr)[i] = element
+			}
+			return
+		}
+	}
+	*slicePtr = append(*slicePtr, element)
 }
