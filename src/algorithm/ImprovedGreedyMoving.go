@@ -494,13 +494,14 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 				newRepresentative = UminDest
 			}
 			algorithm.updateCostSecondDim(i, newRepresentative)
-			// algorithm.updateCostSecondDim(i)
+			algorithm.updateCostSecondDim(i)
 		} else if destPart != nil && indexDPart < len(*destPart) && i == (*destPart)[indexDPart] {
 			// An element in the partition that the moved element is moved to is considered
 			indexDPart++
 			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateMoveCostSource(i, element, UminSource)
 			algorithm.invalidateCost(i, element)
+			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateCostSecondDim(i, UminSource)
 		} else {
 			algorithm.updateMoveCostSource(i, element, UminSource)
@@ -612,10 +613,8 @@ func (algorithm *GreedyMovingAlgorithm[data]) Initialize() ([3]int, float64) {
 func ImprovedGreedyMoving[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
 	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc}
 	nextMove, cost := algorithm.Initialize()
-	i := 0
 
 	for cost < 0 && nextMove[1] != -1 {
-		i++
 		newNextMove, newCost := algorithm.Move(nextMove[0], nextMove[1])
 		if nextMove[2] != -1 {
 			nextMove, cost = algorithm.Move(nextMove[0], nextMove[2])
