@@ -513,80 +513,63 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 	// Update new bestCost for element i, this must be done in a new loop because it
 	// uses the adjusted costs of other elements
 	for i := 0; i < n; i++ {
-		minCost := math.Inf(1)
-		bestMove := -1
+		minCostOneMove := math.Inf(1)
+		bestMoveOneMove := -1
 		msd := (*algorithm.costs)[i]
 
 		for j, oem := range msd.moves {
-			if j == i || oem.doubleMoves == nil {
+			if j == i {
+				continue
+			} else if oem.doubleMoves == nil {
+				if oem.valid && oem.cost < minCostOneMove {
+					minCostOneMove = oem.cost
+					bestMoveOneMove = j
+				}
 				continue
 			}
-			doubleCostChanged := false
-			if diffI, ok := algorithm.removeCosts[i]; ok {
-				doubleCostChanged = true
-				for k := 0; k < len(*oem.doubleMoves); k++ {
-					kElement := getDoubleMoveElement(i, j, k)
-					(*oem.doubleMoves)[k].cost += diffI
-					(*oem.doubleMoves)[k].cost += algorithm.removeCosts[kElement]
 
-					// if i and k are in the same partition, some costs were considered twice
-					// so they have to be substracted again
-					if utils.Contains(*algorithm.partitions[i], kElement) {
-						if len(*algorithm.partitions[i]) == 2 {
-							(*oem.doubleMoves)[k].cost -= diffI
-						} else {
-							(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
-						}
-					}
+			// recompute all double moves
+			invalid := oem.bestMove < 0
+			minCostDoubleMove := math.Inf(1)
+			bestMoveDoubleMove := -1
+			for k := 0; k < len(*oem.doubleMoves); k++ {
+				kElement := getDoubleMoveElement(i, j, k)
+				(*oem.doubleMoves)[k].cost = algorithm.tripleCosts.GetTripleCost(i, j, kElement) + algorithm.getRemoveCost(i) + algorithm.getRemoveCost(kElement)
+
+				// if i and k are in the same partition, some costs were considered twice
+				// so they have to be substracted again
+				if utils.Contains(*algorithm.partitions[i], kElement) {
+					(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
 				}
-			} else {
-				for k, diff := range algorithm.removeCosts {
-					if j == k {
-						continue
-					}
-					index := getDoubleMoveIndex(i, j, k)
-					if index > -1 {
-						doubleCostChanged = true
-						(*oem.doubleMoves)[index].cost += diff
-					}
+				if (*oem.doubleMoves)[k].valid && (*oem.doubleMoves)[k].cost < minCostDoubleMove {
+					minCostDoubleMove = (*oem.doubleMoves)[k].cost
+					bestMoveDoubleMove = k
 				}
 			}
 
-			// update the OneElementMove cost with the new best double move
-			if oem.doubleMoves != nil && doubleCostChanged {
-				invalid := oem.bestMove < 0
-				min := math.Inf(1)
-				best := -1
-				for k, doubleMove := range *oem.doubleMoves {
-					if doubleMove.valid && doubleMove.cost < min {
-						min = doubleMove.cost
-						best = k
-					}
-				}
-				if invalid {
-					oem.bestMove = -(getDoubleMoveElement(i, j, best) + 1)
-				} else {
-					oem.bestMove = getDoubleMoveElement(i, j, best)
-					oem.cost = min
-				}
+			if invalid {
+				oem.bestMove = -(getDoubleMoveElement(i, j, bestMoveDoubleMove) + 1)
+			} else {
+				oem.bestMove = getDoubleMoveElement(i, j, bestMoveDoubleMove)
+				oem.cost = minCostDoubleMove
 			}
 
 			if !oem.valid {
 				continue
-			} else if oem.cost < minCost {
-				minCost = oem.cost
-				bestMove = j
+			} else if oem.cost < minCostOneMove {
+				minCostOneMove = oem.cost
+				bestMoveOneMove = j
 			}
 		}
 
 		// The cost for moving element i into a singleton was not considered yet
-		if msd.moves[i].valid && msd.moves[i].cost < minCost {
-			minCost = msd.moves[i].cost
-			bestMove = i
+		if msd.moves[i].valid && msd.moves[i].cost < minCostOneMove {
+			minCostOneMove = msd.moves[i].cost
+			bestMoveOneMove = i
 		}
 
-		msd.minCost = minCost
-		msd.bestMove = bestMove
+		msd.minCost = minCostOneMove
+		msd.bestMove = bestMoveOneMove
 
 		// check if the bestMove for i is better overall
 		if msd.minCost < bestCostOverall {
