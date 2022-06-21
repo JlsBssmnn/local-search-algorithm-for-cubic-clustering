@@ -67,6 +67,15 @@ func getDoubleMoveElement(i, j, k int) int {
 	return element
 }
 
+// Gets the cost for moving the given element into a singleton partition
+func (algorithm *GreedyMovingAlgorithm[data]) getRemoveCost(element int) float64 {
+	if oem := (*algorithm.costs)[element].moves[element]; oem.valid {
+		return oem.cost
+	} else {
+		return 0
+	}
+}
+
 // Invalidates the cost of moving element1 into the partition of element2
 func (algorithm *GreedyMovingAlgorithm[data]) invalidateCost(element1, element2 int) {
 	(*algorithm.costs)[element1].moves[element2].valid = false
@@ -94,8 +103,10 @@ func (algorithm *GreedyMovingAlgorithm[data]) validateDoubleMove(element, single
 	oem.bestMove *= -1
 	oem.bestMove--
 	index := getDoubleMoveIndex(element, singleton, oem.bestMove)
-	if oem.doubleMoves == nil || index < 0 {
+	if oem.doubleMoves == nil {
 		oem.valid = false
+	} else if index < 0 {
+		panic("best move for double move yields invalid index")
 	} else {
 		oem.cost = (*oem.doubleMoves)[index].cost
 	}
@@ -154,12 +165,13 @@ func (algorithm *GreedyMovingAlgorithm[data]) updateRemoveCostSource(element, rE
 }
 
 // This function applies a change in remove costs to all elements in the second dimension of the element
-func (algorithm *GreedyMovingAlgorithm[data]) updateCostSecondDim(element int) {
+// except for the ignore elements
+func (algorithm *GreedyMovingAlgorithm[data]) updateCostSecondDim(element int, ignore ...int) {
 	diff := algorithm.removeCosts[element]
 	msd := (*algorithm.costs)[element]
 	for j := 0; j < len(msd.moves); j++ {
 		oem := msd.moves[j]
-		if j == element || !oem.valid {
+		if j == element || !oem.valid || utils.Contains(ignore, j) {
 			continue
 		}
 		msd.moves[j].cost += diff
@@ -244,9 +256,10 @@ func (algorithm *GreedyMovingAlgorithm[data]) updateMoveCostSource(element, rEle
 
 	diff := algorithm.tripleCostSum(element, rElement, rElement)
 	formerRepresentative := utils.Min([]int{rElement, Umin})
+	removeCostDiff := algorithm.removeCosts[element]
 
 	oem := (*algorithm.costs)[element].moves[Umin]
-	oem.cost = (*algorithm.costs)[element].moves[formerRepresentative].cost - diff
+	oem.cost = (*algorithm.costs)[element].moves[formerRepresentative].cost - diff + removeCostDiff
 	algorithm.validateCost(element, Umin)
 	algorithm.invalidateDoubleMove(element, Umin)
 }
@@ -273,10 +286,15 @@ func (algorithm *GreedyMovingAlgorithm[data]) updateMoveCostTarget(element, rEle
 	oem := (*algorithm.costs)[element].moves[newRepresentative]
 
 	if len(*algorithm.partitions[Umin]) == 1 {
-		oem.cost = algorithm.tripleCosts.GetTripleCost(element, rElement, Umin)
+		var removeCost float64
+		if oem := (*algorithm.costs)[element].moves[element]; oem.valid {
+			removeCost = oem.cost
+		}
+		oem.cost = algorithm.tripleCosts.GetTripleCost(element, rElement, Umin) + removeCost
 	} else {
 		diff := algorithm.tripleCostSum(element, rElement, Umin)
-		oem.cost = (*algorithm.costs)[element].moves[Umin].cost + diff
+		removeCostDiff := algorithm.removeCosts[element]
+		oem.cost = (*algorithm.costs)[element].moves[Umin].cost + diff + removeCostDiff
 	}
 	algorithm.validateCost(element, newRepresentative)
 	algorithm.invalidateDoubleMove(element, newRepresentative)
@@ -435,11 +453,12 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 			if UminSource == -1 {
 				// The partition where the moved element is comming from is a singleton
 				algorithm.invalidateCost(i, UminDest)
-				newCost := -algorithm.getRealMoveCost(i, UminDest)
+				newRemoveCost := -(algorithm.getRealMoveCost(i, UminDest) - oem.cost)
 
-				algorithm.removeCosts[i] = -oem.cost + newCost
-				oem.cost = newCost
+				algorithm.removeCosts[i] = -oem.cost + newRemoveCost
+				oem.cost = newRemoveCost
 				algorithm.validateCost(i, i)
+				algorithm.updateCostSecondDim(i)
 			} else if UminDest == -1 {
 				// The element is moved into a singleton set
 				algorithm.removeCosts[i] = -oem.cost
@@ -447,27 +466,42 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 				algorithm.invalidateCost(i, i)
 				(*algorithm.costs)[i].moves[UminSource].cost = -oem.cost
 				algorithm.validateCost(i, UminSource)
+				algorithm.updateCostSecondDim(i, UminSource)
+				if len(*algorithm.partitions[UminSource]) > 2 {
+					algorithm.invalidateDoubleMove(i, UminSource)
+				}
 			} else {
-				algorithm.removeCosts[i] = -oem.cost - algorithm.getRealMoveCost(i, UminDest)
+				(*algorithm.costs)[i].moves[UminSource].cost = -(*algorithm.costs)[i].moves[UminDest].cost
+				newRemoveCost := -(algorithm.getRealMoveCost(i, UminDest) - oem.cost)
+				algorithm.removeCosts[i] = -oem.cost + newRemoveCost
 				algorithm.invalidateCost(i, UminDest)
-				oem.cost = -algorithm.getRealMoveCost(i, UminDest)
-				(*algorithm.costs)[i].moves[UminSource].cost = -oem.cost
+				oem.cost = newRemoveCost
 				algorithm.validateCost(i, UminSource)
+				algorithm.updateCostSecondDim(i, UminSource)
+				if len(*algorithm.partitions[UminSource]) > 2 {
+					algorithm.invalidateDoubleMove(i, UminSource)
+				}
 			}
-			// algorithm.updateCostSecondDim(i)
 		} else if indexEPart < len(*ePart) && i == (*ePart)[indexEPart] {
 			// An element in the partition of the moved element is considered
 			indexEPart++
 			algorithm.updateRemoveCostSource(i, element)
 			algorithm.updateMoveCostTarget(i, element, UminDest)
+			var newRepresentative int
+			if element < UminDest {
+				newRepresentative = element
+			} else {
+				newRepresentative = UminDest
+			}
+			algorithm.updateCostSecondDim(i, newRepresentative)
 			// algorithm.updateCostSecondDim(i)
 		} else if destPart != nil && indexDPart < len(*destPart) && i == (*destPart)[indexDPart] {
 			// An element in the partition that the moved element is moved to is considered
 			indexDPart++
+			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateMoveCostSource(i, element, UminSource)
 			algorithm.invalidateCost(i, element)
-			algorithm.updateRemoveCostDest(i, element)
-			// algorithm.updateCostSecondDim(i)
+			algorithm.updateCostSecondDim(i, UminSource)
 		} else {
 			algorithm.updateMoveCostSource(i, element, UminSource)
 			algorithm.updateMoveCostTarget(i, element, UminDest)
@@ -484,47 +518,42 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 		msd := (*algorithm.costs)[i]
 
 		for j, oem := range msd.moves {
-			if j == i {
+			if j == i || oem.doubleMoves == nil {
 				continue
 			}
 			doubleCostChanged := false
-			// if diffI, ok := algorithm.removeCosts[i]; ok && oem.doubleMoves != nil {
-			// 	doubleCostChanged = true
-			// 	for k := 0; k < len(*oem.doubleMoves); k++ {
-			// 		kElement := getDoubleMoveElement(i, j, k)
-			// 		(*oem.doubleMoves)[k].cost += diffI
-			// 		(*oem.doubleMoves)[k].cost += algorithm.removeCosts[kElement]
+			if diffI, ok := algorithm.removeCosts[i]; ok {
+				doubleCostChanged = true
+				for k := 0; k < len(*oem.doubleMoves); k++ {
+					kElement := getDoubleMoveElement(i, j, k)
+					(*oem.doubleMoves)[k].cost += diffI
+					(*oem.doubleMoves)[k].cost += algorithm.removeCosts[kElement]
 
-			// 		// if i and k are in the same partition, some costs were considered twice
-			// 		// so they have to be substracted again
-			// 		if utils.Contains(*algorithm.partitions[i], kElement) {
-			// 			(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
-			// 		}
-			// 	}
-			// }
-			if !doubleCostChanged {
-				// update the double move cost for this element with the cached remove costs
+					// if i and k are in the same partition, some costs were considered twice
+					// so they have to be substracted again
+					if utils.Contains(*algorithm.partitions[i], kElement) {
+						if len(*algorithm.partitions[i]) == 2 {
+							(*oem.doubleMoves)[k].cost -= diffI
+						} else {
+							(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
+						}
+					}
+				}
+			} else {
 				for k, diff := range algorithm.removeCosts {
 					if j == k {
 						continue
 					}
 					index := getDoubleMoveIndex(i, j, k)
-					if index < 0 {
-						continue
-					}
-					doubleCostChanged = true
-					(*oem.doubleMoves)[index].cost += diff
-					(*oem.doubleMoves)[index].cost += algorithm.removeCosts[i]
-
-					// if i and k are in the same partition, some costs were considered twice
-					// so they have to be substracted again
-					if utils.Contains(*algorithm.partitions[i], k) {
-						(*oem.doubleMoves)[index].cost += algorithm.tripleCostSum(i, k, i)
+					if index > -1 {
+						doubleCostChanged = true
+						(*oem.doubleMoves)[index].cost += diff
 					}
 				}
 			}
 
-			if oem.doubleMoves != nil {
+			// update the OneElementMove cost with the new best double move
+			if oem.doubleMoves != nil && doubleCostChanged {
 				invalid := oem.bestMove < 0
 				min := math.Inf(1)
 				best := -1
@@ -544,48 +573,17 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 
 			if !oem.valid {
 				continue
-			}
-			// var removingCostOtherElement float64
-			// if otherElement := oem.bestMove; otherElement > -1 {
-			// 	if oemOtherElement := (*algorithm.costs)[otherElement].moves[otherElement]; oemOtherElement.valid {
-			// 		// The best move for the element is achieved via a double and removing the other element
-			// 		// also introduces new cost which must be considered
-			// 		removingCostOtherElement = oemOtherElement.cost
-			// 	}
-			// }
-			// if oem.cost+removingCostOtherElement < minCost {
-			// 	minCost = oem.cost + removingCostOtherElement
-			// 	bestMove = j
-			// }
-			if oem.cost < minCost {
+			} else if oem.cost < minCost {
 				minCost = oem.cost
 				bestMove = j
 			}
 		}
 
-		// minCost is just the cost difference for adding the element to a partition + the cost
-		// for removing the second element in case of a double move. But for
-		// getting the best move we also must consider the cost for removing the element from it's
-		// partition
-		if msd.moves[i].valid && 0 < minCost {
-			// in this case moving the element into a singleton is better than every other
-			// move for this element
+		// The cost for moving element i into a singleton was not considered yet
+		if msd.moves[i].valid && msd.moves[i].cost < minCost {
 			minCost = msd.moves[i].cost
 			bestMove = i
-		} else {
-			// the removal costs have to be added to the minCost
-			var removingCost float64
-			if msd.moves[i].valid {
-				removingCost = msd.moves[i].cost
-			}
-			minCost += removingCost
 		}
-
-		// The cost for moving element i into a singleton was not considered yet
-		// if msd.moves[i].valid && msd.moves[i].cost < minCost {
-		// 	minCost = msd.moves[i].cost
-		// 	bestMove = i
-		// }
 
 		msd.minCost = minCost
 		msd.bestMove = bestMove
