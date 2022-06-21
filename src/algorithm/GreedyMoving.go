@@ -11,6 +11,7 @@ type NaiveGreedyMovingAlgorithm[data any] struct {
 	calc         CostCalculator[data]
 	partitioning PartitioningArray
 	partitions   map[int]*[]int
+	tripleCosts  *TripleCosts
 }
 
 func (algorithm *NaiveGreedyMovingAlgorithm[data]) FindBestMove() ([3]int, float64) {
@@ -88,6 +89,7 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) initialize() {
 		algorithm.partitioning[i] = i
 		algorithm.partitions[i] = &[]int{i}
 	}
+	algorithm.InitializeTripleCosts()
 }
 
 // Moves element a into partition U
@@ -119,7 +121,7 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) costDiff1Move(U, a int) float
 
 	for i := 0; i < len(partU); i++ {
 		for j := i + 1; j < len(partU); j++ {
-			cost += algorithm.calc.TripleCost((*algorithm.input)[partU[i]], (*algorithm.input)[partU[j]], (*algorithm.input)[a])
+			cost += algorithm.tripleCosts.GetTripleCost(partU[i], partU[j], a)
 		}
 	}
 	return cost
@@ -135,7 +137,7 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) costDiff2Moves(U, a1, a2 int)
 		cost += algorithm.costDiff1Move(U, a1)
 		cost += algorithm.costDiff1Move(U, a2)
 		for i := 0; i < len(partU); i++ {
-			cost += algorithm.calc.TripleCost((*algorithm.input)[partU[i]], (*algorithm.input)[a1], (*algorithm.input)[a2])
+			cost += algorithm.tripleCosts.GetTripleCost(partU[i], a1, a2)
 		}
 		return cost
 	}
@@ -145,20 +147,20 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) costDiff2Moves(U, a1, a2 int)
 		if a1 == partA[i] || a2 == partA[i] {
 			continue
 		}
-		cost -= algorithm.calc.TripleCost((*algorithm.input)[partA[i]], (*algorithm.input)[a1], (*algorithm.input)[a2])
+		cost -= algorithm.tripleCosts.GetTripleCost(partA[i], a1, a2)
 		for j := i + 1; j < len(partA); j++ {
 			if a1 == partA[j] || a2 == partA[j] {
 				continue
 			}
-			cost -= algorithm.calc.TripleCost((*algorithm.input)[partA[i]], (*algorithm.input)[partA[j]], (*algorithm.input)[a1])
-			cost -= algorithm.calc.TripleCost((*algorithm.input)[partA[i]], (*algorithm.input)[partA[j]], (*algorithm.input)[a2])
+			cost -= algorithm.tripleCosts.GetTripleCost(partA[i], partA[j], a1)
+			cost -= algorithm.tripleCosts.GetTripleCost(partA[i], partA[j], a2)
 		}
 	}
 	for i := 0; i < len(partU); i++ {
-		cost += algorithm.calc.TripleCost((*algorithm.input)[partU[i]], (*algorithm.input)[a1], (*algorithm.input)[a2])
+		cost += algorithm.tripleCosts.GetTripleCost(partU[i], a1, a2)
 		for j := i + 1; j < len(partU); j++ {
-			cost += algorithm.calc.TripleCost((*algorithm.input)[partU[i]], (*algorithm.input)[partU[j]], (*algorithm.input)[a1])
-			cost += algorithm.calc.TripleCost((*algorithm.input)[partU[i]], (*algorithm.input)[partU[j]], (*algorithm.input)[a2])
+			cost += algorithm.tripleCosts.GetTripleCost(partU[i], partU[j], a1)
+			cost += algorithm.tripleCosts.GetTripleCost(partU[i], partU[j], a2)
 		}
 	}
 	return cost
@@ -176,7 +178,7 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) costDiffRemoveElement(a int) 
 			if a == partA[j] {
 				continue
 			}
-			cost -= algorithm.calc.TripleCost((*algorithm.input)[partA[i]], (*algorithm.input)[partA[j]], (*algorithm.input)[a])
+			cost -= algorithm.tripleCosts.GetTripleCost(partA[i], partA[j], a)
 		}
 	}
 	return cost
@@ -198,4 +200,24 @@ func GreedyMoving[data any](input *[]data, calc CostCalculator[data]) Partitioni
 		U, a, b = nextMove[0], nextMove[1], nextMove[2]
 	}
 	return algorithm.partitioning
+}
+
+func (algorithm *NaiveGreedyMovingAlgorithm[data]) InitializeTripleCosts() {
+	n := len(*algorithm.input)
+	firstDim := make(TripleCosts, n-2)
+
+	for i := 0; i < n-2; i++ {
+		secondDim := make([][]float64, n-i-2)
+
+		for j := i + 1; j < n-1; j++ {
+			thirdDim := make([]float64, n-j-1)
+
+			for k := j + 1; k < n; k++ {
+				thirdDim[k-j-1] = algorithm.calc.TripleCost((*algorithm.input)[i], (*algorithm.input)[j], (*algorithm.input)[k])
+			}
+			secondDim[j-i-1] = thirdDim
+		}
+		firstDim[i] = secondDim
+	}
+	algorithm.tripleCosts = &firstDim
 }
