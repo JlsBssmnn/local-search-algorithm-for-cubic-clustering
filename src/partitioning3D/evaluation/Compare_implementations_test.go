@@ -43,8 +43,6 @@ func TestCompareAlgorithms(t *testing.T) {
 		firstAlgorithm = algorithm.GreedyJoining[geometry.Vector]
 	case "GreedyMoving":
 		firstAlgorithm = algorithm.GreedyMoving[geometry.Vector]
-	case "ImprovedGreedyMoving":
-		firstAlgorithm = algorithm.ImprovedGreedyMoving[geometry.Vector]
 	default:
 		t.Error("The specified algorithm1 is not supported")
 		t.FailNow()
@@ -55,8 +53,6 @@ func TestCompareAlgorithms(t *testing.T) {
 		secondAlgorithm = algorithm.GreedyJoining[geometry.Vector]
 	case "GreedyMoving":
 		secondAlgorithm = algorithm.GreedyMoving[geometry.Vector]
-	case "ImprovedGreedyMoving":
-		secondAlgorithm = algorithm.ImprovedGreedyMoving[geometry.Vector]
 	default:
 		t.Error("The specified algorithm2 is not supported")
 		t.FailNow()
