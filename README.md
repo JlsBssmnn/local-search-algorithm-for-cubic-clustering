@@ -24,8 +24,10 @@ In the `/helper_scripts` directory are python scripts for parsing and visualizin
 ### Benchmarks
 Benchmarks for the algorithms for the case of points sampled from planes can be found in the file `src/partitioning3D/evaluation/AlgorithmBenchmarks_test.go`. An algorithm can be benchmarked either with or without noise. The data for the partitioning will be created automatically and the number of datapoints depends on the `testTable` which is located in the same file.
 
-To run a benchmark with `benchmarkName` use the following command (with the braces):
-`go test ./src/partitioning3D/evaluation -run=^$ -bench=^{benchmarkName}$ -v`
+To run a benchmark with `benchmarkName` use the following command (without the braces):
+```sh
+$ go test ./src/partitioning3D/evaluation -run=^$ -bench=^{benchmarkName}$ -v
+```
 
 ### Evaluation of Algorithms
 The algorithms can also be evaluated according to their accuracy. This can be done via the file `src/partitioning3D/evaluation/Algorithm_evaluation_test.go`. You can define the following parameters for the test via command-line arguments:
@@ -35,8 +37,11 @@ The algorithms can also be evaluated according to their accuracy. This can be do
 - `stddev`: The standard deviation for the noise
 - `numberOfPlanes`: How many planes should be used to sample data points
 - `pointsPerPlane`: How many points per plane should be sampled
+
 Again, these tests can be done with or without noise, depending on which function is tested. To evaluate an algorithm with the function `evalFunction` that uses a threshold of 0.5 and samples 10 points from 7 different planes respectively use the following command:
-`go test ./src/partitioning3D/evaluation -run=^{evalFunction}$ -v -threshold 0.5 -numberOfPlanes 7 -pointsPerPlane 10`
+```sh
+$ go test ./src/partitioning3D/evaluation -run=^{evalFunction}$ -v -threshold 0.5 -numberOfPlanes 7 -pointsPerPlane 10
+```
 
 ### Compare Algorithms
 The `src/partitioning3D/evaluation/Compare_implementations_test.go` file can be used to compare if 2 algorithms work the same way. To do this use the flags `-algorithm1` and `-algorithm2` to specify which 2 algorithms should be compared. Additionally you can specify the following parameters:
@@ -46,6 +51,7 @@ The `src/partitioning3D/evaluation/Compare_implementations_test.go` file can be 
 - `algorithm1`: The first algorithm in the equality test
 - `algorithm2`: The second algorithm in the equality test
 - `verbose`: If this is 1 the result of every iteration will be printed out, if it's 2 it will also print which elements are differenlty partitioned by the 2 algorithms
+
 All arguments mentioned for the evaluation of algorithms can also be specified but will only be applied if `randomizeParameters` is `false`. 
 
 ### Generating test data
@@ -54,5 +60,8 @@ The `src/partitioning3D/evaluation/TestDataGenerator_test.go` file can be used t
 - `pointsPerPlane`
 - `mean`
 - `stddev`
-Additionally you have to specify where the csv file should be written. This is done via the `outputFile` argument. The value of this arguments must be the entire path to the output file and the file itself. To generate test data from 3 planes with 5 points per plane without any noise use this command:
-`go test .\src\partitioning3D\evaluation\ -run=^TestSaveTestDataToFile$ -numberOfPlanes 3 -pointsPerPlane 5 -outputFile /path/to/file/testData.csv`
+
+Additionally you have to specify where the csv file should be written to. This is done via the `-outputFile` argument. The value of this arguments must be the entire path to the output file and the file itself. To generate test data from 3 planes with 5 points per plane without any noise use this command:
+```sh
+$ go test .\src\partitioning3D\evaluation\ -run=^TestSaveTestDataToFile$ -numberOfPlanes 3 -pointsPerPlane 5 -mean 0 -stddev 0 -outputFile /path/to/file/testData.csv
+```
