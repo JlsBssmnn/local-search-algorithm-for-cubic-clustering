@@ -1,8 +1,12 @@
 package evaluation
 
 import (
+	"encoding/csv"
+	"flag"
 	"fmt"
 	"math"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
@@ -11,6 +15,12 @@ import (
 )
 
 var delta = 0.00000001
+
+var outputFile *string
+
+func init() {
+	outputFile = flag.String("outputFile", "", "The path and file name where the test data should be written to")
+}
 
 func TestGenerateDataWithoutNoise(t *testing.T) {
 	nPlanes := 5
@@ -68,5 +78,37 @@ func BenchmarkDataCreation(b *testing.B) {
 				GenerateDataWithNoise(v.numOfPlanes, v.pointsPerPlane, utils.NormalDist{Mean: 0, Stddev: 0})
 			}
 		})
+	}
+}
+
+// This is not a unit test. It can be used to generate test data and save it to a file.
+func TestSaveTestDataToFile(t *testing.T) {
+	flag.Parse()
+	if *outputFile == "" {
+		return
+	}
+	testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, utils.NormalDist{Mean: *mean, Stddev: *stddev})
+
+	file, err := os.Create(*outputFile)
+	defer file.Close()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	if err := writer.Write([]string{"X", "Y", "Z"}); err != nil {
+		t.Error(err)
+		return
+	}
+	for _, point := range testData.points {
+		csvRow := []string{strconv.FormatFloat(point.X, 'f', 15, 64), strconv.FormatFloat(point.Y, 'f', 15, 64), strconv.FormatFloat(point.Z, 'f', 15, 64)}
+		if err := writer.Write(csvRow); err != nil {
+			t.Error(err)
+			return
+		}
 	}
 }

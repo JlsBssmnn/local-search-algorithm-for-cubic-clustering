@@ -47,3 +47,12 @@ The `src/partitioning3D/evaluation/Compare_implementations_test.go` file can be 
 - `algorithm2`: The second algorithm in the equality test
 - `verbose`: If this is 1 the result of every iteration will be printed out, if it's 2 it will also print which elements are differenlty partitioned by the 2 algorithms
 All arguments mentioned for the evaluation of algorithms can also be specified but will only be applied if `randomizeParameters` is `false`. 
+
+### Generating test data
+The `src/partitioning3D/evaluation/TestDataGenerator_test.go` file can be used to write test data into a csv file. More specifically, the test `TestSaveTestDataToFile` will do this. Again the following parameters can be specified as command-line arguments to describe how the test data will be created:
+- `numberOfPlanes`
+- `pointsPerPlane`
+- `mean`
+- `stddev`
+Additionally you have to specify where the csv file should be written. This is done via the `outputFile` argument. The value of this arguments must be the entire path to the output file and the file itself. To generate test data from 3 planes with 5 points per plane without any noise use this command:
+`go test .\src\partitioning3D\evaluation\ -run=^TestSaveTestDataToFile$ -numberOfPlanes 3 -pointsPerPlane 5 -outputFile /path/to/file/testData.csv`
