@@ -19,6 +19,8 @@ func main() {
 	fileName := flag.String("fileName", "", "The path to the csv file with the input data")
 	threshold := flag.Float64("threshold", 1.0, "The threshold for the cost calculation")
 	amplification := flag.Float64("amplification", 1.0, "The amplification for the cost calculation")
+	selectedAlgorithm := flag.String("algorithm", "", "The algorithm which should be used for the partitioning")
+	constraintFile := flag.String("constraintFile", "", "The path to a file which containts constraints for a partitioning")
 
 	flag.Parse()
 
@@ -30,7 +32,20 @@ func main() {
 
 	points := parsePoints(*fileName)
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
-	partitioningArray := algorithm.GreedyJoining[geometry.Vector](&points, &calc)
+
+	var partitioningArray algorithm.PartitioningArray
+	switch *selectedAlgorithm {
+	case "GreedyJoining":
+		partitioningArray = algorithm.GreedyJoining[geometry.Vector](&points, &calc)
+	case "GreedyMoving":
+		if *constraintFile != "" {
+			partitioningArray = algorithm.GreedyMovingWithConstraints[geometry.Vector](&points, &calc, *constraintFile)
+		} else {
+			partitioningArray = algorithm.GreedyMoving[geometry.Vector](&points, &calc)
+		}
+	default:
+		panic("The provided algorithm isn't supported!")
+	}
 
 	// Order elements by their partition
 	partitioning := make(map[int]*utils.LinkedList[int])
