@@ -625,3 +625,29 @@ func ImprovedGreedyMoving[data any](input *[]data, calc CostCalculator[data]) Pa
 	}
 	return algorithm.partitioning
 }
+
+// The same as the ImprovedGreedyMoving algorithm but you can specify the path to a constraint
+// file. These constraints will be considered by the algorithm.
+func ImprovedGreedyMovingWithConstraints[data any](input *[]data, calc CostCalculator[data], path string) PartitioningArray {
+	constraints, precomputedPartitions := translatetConstraints(parseConstraints(path), len(*input))
+	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc, constraints: &constraints}
+
+	nextMove, cost := algorithm.Initialize()
+	for key, list := range precomputedPartitions {
+		iter := list.Iterator()
+		for iter.HasNext() {
+			nextMove, cost = algorithm.Move(key, iter.Next())
+		}
+	}
+
+	for cost < 0 && nextMove[1] != -1 {
+		newNextMove, newCost := algorithm.Move(nextMove[0], nextMove[1])
+		if nextMove[2] != -1 {
+			nextMove, cost = algorithm.Move(nextMove[0], nextMove[2])
+		} else {
+			nextMove = newNextMove
+			cost = newCost
+		}
+	}
+	return algorithm.partitioning
+}
