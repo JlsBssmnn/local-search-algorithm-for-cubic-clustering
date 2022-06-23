@@ -32,8 +32,8 @@ func init() {
 func TestCompareAlgorithms(t *testing.T) {
 	flag.Parse()
 	if *algorithm1 == "" || *algorithm2 == "" {
-		t.Error("Both algorithms have to be specified in order to compare them")
-		t.FailNow()
+		t.Log("Both algorithms have to be specified in order to compare them")
+		return
 	}
 
 	var firstAlgorithm, secondAlgorithm AlgorithmFunction

@@ -494,14 +494,12 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 				newRepresentative = UminDest
 			}
 			algorithm.updateCostSecondDim(i, newRepresentative)
-			algorithm.updateCostSecondDim(i)
 		} else if destPart != nil && indexDPart < len(*destPart) && i == (*destPart)[indexDPart] {
 			// An element in the partition that the moved element is moved to is considered
 			indexDPart++
 			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateMoveCostSource(i, element, UminSource)
 			algorithm.invalidateCost(i, element)
-			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateCostSecondDim(i, UminSource)
 		} else {
 			algorithm.updateMoveCostSource(i, element, UminSource)
