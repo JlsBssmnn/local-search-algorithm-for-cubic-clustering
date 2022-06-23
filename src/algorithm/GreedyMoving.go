@@ -461,10 +461,10 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 				algorithm.updateCostSecondDim(i)
 			} else if UminDest == -1 {
 				// The element is moved into a singleton set
+				(*algorithm.costs)[i].moves[UminSource].cost = -oem.cost
 				algorithm.removeCosts[i] = -oem.cost
 				oem.cost = 0
 				algorithm.invalidateCost(i, i)
-				(*algorithm.costs)[i].moves[UminSource].cost = -oem.cost
 				algorithm.validateCost(i, UminSource)
 				algorithm.updateCostSecondDim(i, UminSource)
 				if len(*algorithm.partitions[UminSource]) > 2 {
@@ -494,14 +494,12 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 				newRepresentative = UminDest
 			}
 			algorithm.updateCostSecondDim(i, newRepresentative)
-			algorithm.updateCostSecondDim(i)
 		} else if destPart != nil && indexDPart < len(*destPart) && i == (*destPart)[indexDPart] {
 			// An element in the partition that the moved element is moved to is considered
 			indexDPart++
 			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateMoveCostSource(i, element, UminSource)
 			algorithm.invalidateCost(i, element)
-			algorithm.updateRemoveCostDest(i, element)
 			algorithm.updateCostSecondDim(i, UminSource)
 		} else {
 			algorithm.updateMoveCostSource(i, element, UminSource)
@@ -581,7 +579,7 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 			} else {
 				U = msd.bestMove
 			}
-			if msd.moves[msd.bestMove].bestMove < 0 {
+			if msd.moves[msd.bestMove].bestMove < 0 || U == -1 {
 				b = -1
 			} else {
 				b = msd.moves[msd.bestMove].bestMove
