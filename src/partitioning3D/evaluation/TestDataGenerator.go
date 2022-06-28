@@ -32,3 +32,15 @@ func GenerateDataWithNoise(numOfPlanes, pointsPerPlane int, noise utils.NormalDi
 	}
 	return GenerateData(numOfPlanes, pointsPerPlane, sampling)
 }
+
+// Samples the specified number of points from each of the given planes with noise and
+// returns everything as a test data struct
+func GenerateDataFromPlanesWithNoise(planes []g.Vector, pointsPerPlane int, noise utils.NormalDist) TestData {
+	points := make([]g.Vector, 0, len(planes)*pointsPerPlane)
+	for _, plane := range planes {
+		for j := 0; j < pointsPerPlane; j++ {
+			points = append(points, g.SamplePointFromPlaneWithNoise(plane, noise))
+		}
+	}
+	return TestData{numOfPlanes: len(planes), planes: planes, points: points}
+}
