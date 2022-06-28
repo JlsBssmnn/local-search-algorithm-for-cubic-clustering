@@ -71,6 +71,30 @@ func TestGenerateDataWithNoise(t *testing.T) {
 	}
 }
 
+func TestDataFromPlanes(t *testing.T) {
+	planes := []geometry.Vector{{X: 1, Y: 0, Z: 0}, {X: 0, Y: 1, Z: 0}, {X: 0, Y: 0, Z: 1}}
+	testData := GenerateDataFromPlanesWithNoise(planes, 5, utils.NormalDist{Mean: 0, Stddev: 0})
+
+	for i := 0; i < 5; i++ {
+		point := testData.points[i]
+		assert.Equal(t, 0.0, point.X)
+		assert.True(t, point.Y != math.NaN() && point.Y != math.Inf(1) && point.Y != math.Inf(-1))
+		assert.True(t, point.Z != math.NaN() && point.Z != math.Inf(1) && point.Z != math.Inf(-1))
+	}
+	for i := 5; i < 10; i++ {
+		point := testData.points[i]
+		assert.Equal(t, 0.0, point.Y)
+		assert.True(t, point.X != math.NaN() && point.X != math.Inf(1) && point.X != math.Inf(-1))
+		assert.True(t, point.Z != math.NaN() && point.Z != math.Inf(1) && point.Z != math.Inf(-1))
+	}
+	for i := 10; i < 15; i++ {
+		point := testData.points[i]
+		assert.Equal(t, 0.0, point.Z)
+		assert.True(t, point.X != math.NaN() && point.X != math.Inf(1) && point.X != math.Inf(-1))
+		assert.True(t, point.Y != math.NaN() && point.Y != math.Inf(1) && point.Y != math.Inf(-1))
+	}
+}
+
 func BenchmarkDataCreation(b *testing.B) {
 	for _, v := range testTable {
 		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {

@@ -31,7 +31,10 @@ func CreateRandomUnitVec() Vector {
 // that is on the plane
 func SamplePointFromPlane(planeNormalVector Vector) Vector {
 	point := CreateRandomVec()
-	point.Z = -(planeNormalVector.X*point.X + planeNormalVector.Y*point.Y) / planeNormalVector.Z
+	dist := (planeNormalVector.X*point.X + planeNormalVector.Y*point.Y + planeNormalVector.Z*point.Z) / planeNormalVector.GetLength()
+	planeNormalVector.ScalarMultiplication(-dist)
+
+	point.AddVector(planeNormalVector)
 
 	if DistFromPlane(planeNormalVector, point) > 0.00000001 {
 		panic("The result of SamplePointFromPlane() was a point that is not on the provided plane")
