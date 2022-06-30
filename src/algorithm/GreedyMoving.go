@@ -345,39 +345,50 @@ func (algorithm *GreedyMovingAlgorithm[data]) updateMoveCostTarget(element, rEle
 // into a singleton. UminSource is the smallest element of the previous partition of the
 // element without the element itself or -1 if the element was in a singleton.
 func (algorithm *GreedyMovingAlgorithm[data]) updatePartitioning(UminSource, UminDest, element int) {
+	var waitGroup sync.WaitGroup
+
 	// update partitioning array
-	var formerSourceRepresentative int
-	var newDestRepresentative int
-	if element < UminSource {
-		formerSourceRepresentative = element
-	} else {
-		formerSourceRepresentative = UminSource
-	}
-	if element < UminDest || UminDest == -1 {
-		newDestRepresentative = element
-	} else {
-		newDestRepresentative = UminDest
-	}
-	for i := 0; i < len(*algorithm.input); i++ {
-		if i == element {
-			algorithm.partitioning[i] = newDestRepresentative
-		} else if algorithm.partitioning[i] == formerSourceRepresentative {
-			algorithm.partitioning[i] = UminSource
-		} else if algorithm.partitioning[i] == UminDest {
-			algorithm.partitioning[i] = newDestRepresentative
+	waitGroup.Add(1)
+	go func() {
+		var formerSourceRepresentative int
+		var newDestRepresentative int
+		if element < UminSource {
+			formerSourceRepresentative = element
+		} else {
+			formerSourceRepresentative = UminSource
 		}
-	}
+		if element < UminDest || UminDest == -1 {
+			newDestRepresentative = element
+		} else {
+			newDestRepresentative = UminDest
+		}
+		for i := 0; i < len(*algorithm.input); i++ {
+			if i == element {
+				algorithm.partitioning[i] = newDestRepresentative
+			} else if algorithm.partitioning[i] == formerSourceRepresentative {
+				algorithm.partitioning[i] = UminSource
+			} else if algorithm.partitioning[i] == UminDest {
+				algorithm.partitioning[i] = newDestRepresentative
+			}
+		}
+		waitGroup.Done()
+	}()
 
 	// update partitions map
-	if UminSource != -1 {
-		utils.DeleteByElement(algorithm.partitions[UminSource], element)
-	}
-	if UminDest != -1 {
-		utils.InsertInOrder(algorithm.partitions[UminDest], element)
-		algorithm.partitions[element] = algorithm.partitions[UminDest]
-	} else {
-		algorithm.partitions[element] = &[]int{element}
-	}
+	waitGroup.Add(1)
+	go func() {
+		if UminSource != -1 {
+			utils.DeleteByElement(algorithm.partitions[UminSource], element)
+		}
+		if UminDest != -1 {
+			utils.InsertInOrder(algorithm.partitions[UminDest], element)
+			algorithm.partitions[element] = algorithm.partitions[UminDest]
+		} else {
+			algorithm.partitions[element] = &[]int{element}
+		}
+		waitGroup.Done()
+	}()
+	waitGroup.Wait()
 }
 
 // --------------------------
@@ -476,20 +487,18 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 
 	// The partition where the element was in
 	ePart := algorithm.partitions[element]
-	indexEPart := 0
 
 	// The destination partition
 	destPart := algorithm.partitions[partition]
-	indexDPart := 0
 
 	var waitGroup sync.WaitGroup
 
 	for i := 0; i < n; i++ {
 		waitGroup.Add(1)
-		// go func(i int) {
-		// }(i)
-		algorithm.firstStage(i, element, UminSource, UminDest, &indexEPart, &indexDPart, ePart, destPart)
-		waitGroup.Done()
+		go func(i int) {
+			algorithm.firstStage(i, element, UminSource, UminDest, ePart, destPart)
+			waitGroup.Done()
+		}(i)
 	}
 
 	waitGroup.Wait()
@@ -529,12 +538,11 @@ func (algorithm *GreedyMovingAlgorithm[data]) Move(partition, element int) ([3]i
 	return [3]int{U, a, b}, bestCostOverall
 }
 
-func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource, UminDest int, indexEPart, indexDPart *int,
+func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource, UminDest int,
 	ePart, destPart *[]int) {
 
 	if i == element {
 		// The element that is moved is considered
-		*indexEPart++
 		oem := (*algorithm.costs)[i].moves[i]
 
 		if UminSource == -1 {
@@ -569,9 +577,8 @@ func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource,
 				algorithm.invalidateDoubleMove(i, UminSource)
 			}
 		}
-	} else if *indexEPart < len(*ePart) && i == (*ePart)[*indexEPart] {
+	} else if utils.Contains(*ePart, i) {
 		// An element in the partition of the moved element is considered
-		*indexEPart++
 		algorithm.updateRemoveCostSource(i, element)
 		algorithm.updateMoveCostTarget(i, element, UminDest)
 		var newRepresentative int
@@ -581,9 +588,8 @@ func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource,
 			newRepresentative = UminDest
 		}
 		algorithm.updateCostSecondDim(i, newRepresentative)
-	} else if destPart != nil && *indexDPart < len(*destPart) && i == (*destPart)[*indexDPart] {
+	} else if destPart != nil && utils.Contains(*destPart, i) {
 		// An element in the partition that the moved element is moved to is considered
-		*indexDPart++
 		algorithm.updateRemoveCostDest(i, element)
 		algorithm.updateMoveCostSource(i, element, UminSource)
 		algorithm.invalidateCost(i, element)
