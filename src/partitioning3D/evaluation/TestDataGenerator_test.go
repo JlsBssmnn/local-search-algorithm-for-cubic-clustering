@@ -2,24 +2,29 @@ package evaluation
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 var delta = 0.00000001
 
-var outputFile *string
+var outputFile, inputFile *string
 
 func init() {
 	outputFile = flag.String("outputFile", "", "The path and file name where the test data should be written to")
+	inputFile = flag.String("inputFile", "", "The path and file name where the test data should be read from")
 }
 
 func TestGenerateDataWithoutNoise(t *testing.T) {
@@ -135,4 +140,36 @@ func TestSaveTestDataToFile(t *testing.T) {
 			return
 		}
 	}
+}
+
+// Writes the costs for the points in the given input file to a json file
+func TestSaveCostToFile(t *testing.T) {
+	flag.Parse()
+	if *inputFile == "" || *outputFile == "" {
+		return
+	}
+
+	points, err := partitioning3D.ParsePoints(*inputFile)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
+	alg := algorithm.CreateGreedyMovingAlgorithm[geometry.Vector](points, &calc, nil, nil, nil, nil, nil)
+	alg.InitializeTripleCosts()
+
+	tripleCost := alg.GetTripleCostArray()
+
+	file, err := os.Create(*outputFile)
+	defer file.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	jsonString, err := json.Marshal(tripleCost)
+	if err != nil {
+		panic(err)
+	}
+	ioutil.WriteFile(*outputFile, jsonString, os.ModePerm)
 }

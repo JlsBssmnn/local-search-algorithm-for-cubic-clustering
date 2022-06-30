@@ -87,6 +87,24 @@ func getDoubleMoveElement(i, j, k int) int {
 	return element
 }
 
+// Creates a GreedyMovingAlgorithm struct, can be used for creating this struct outside of this package
+func CreateGreedyMovingAlgorithm[data any](input *[]data, calc CostCalculator[data], constraints *Constraints,
+	partitioning PartitioningArray, partitions map[int]*[]int, tripleCosts *TripleCosts, costs *GreedyMovingCosts) *GreedyMovingAlgorithm[data] {
+
+	return &GreedyMovingAlgorithm[data]{input: input,
+		calc:         calc,
+		constraints:  constraints,
+		partitioning: partitioning,
+		partitions:   partitions,
+		tripleCosts:  tripleCosts,
+		costs:        costs}
+}
+
+// Gets the triple cost array from an algorithm
+func (algorithm *GreedyMovingAlgorithm[data]) GetTripleCostArray() TripleCosts {
+	return *algorithm.tripleCosts
+}
+
 // Gets the cost for moving the given element into a singleton partition
 func (algorithm *GreedyMovingAlgorithm[data]) getRemoveCost(element int) float64 {
 	if oem := (*algorithm.costs)[element].moves[element]; oem.valid {

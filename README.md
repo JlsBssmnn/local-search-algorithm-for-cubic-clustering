@@ -65,3 +65,15 @@ Additionally you have to specify where the csv file should be written to. This i
 ```sh
 $ go test .\src\partitioning3D\evaluation\ -run=^TestSaveTestDataToFile$ -numberOfPlanes 3 -pointsPerPlane 5 -mean 0 -stddev 0 -outputFile /path/to/file/testData.csv
 ```
+
+### Calculating costs and save it to JSON
+The `src/partitioning3D/evaluation/TestDataGenerator_test.go` file can also be used to write the triple costs to a json file in order to use it in some other context without having to calculate the cost yourself. The test `TestSaveCostToFile` is used for this. To get the costs you have to specify the input as a path to a csv file which contains the input data. You also must specify the destination, so where the output should be written to. Thus you can specify the following arguments for this usage:
+- `inputFile`
+- `outputFile`
+- `threshold`
+- `amplification`
+
+An example:
+```sh
+$ go test ./src/partitioning3D/evaluation/ -run=^TestSaveCostToFile$ -inputFile /path/to/input.csv -outputFile /path/to/output.json -threshold 0.001 -amplification 3
+```
