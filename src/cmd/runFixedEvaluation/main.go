@@ -14,6 +14,8 @@ import (
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D/evaluation"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
+	"github.com/vbauerster/mpb"
+	"github.com/vbauerster/mpb/decor"
 )
 
 const ITERATIONS = 45
@@ -72,17 +74,39 @@ func main() {
 	}
 	defer printErrors(result)
 
+	bar := mpb.New()
+	mainPb := bar.AddBar(int64(len(STDDEV_VALUES)), mpb.PrependDecorators(
+		decor.Name("Stddev values:", decor.WCSyncSpaceR),
+		decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
+	),
+		mpb.AppendDecorators(
+			decor.AverageETA(decor.ET_STYLE_GO),
+			decor.Name(" - "),
+			decor.Percentage(decor.WC{W: 5}),
+		))
+
 	for i, stddev := range STDDEV_VALUES {
 		accuracies := make([]float64, 0, ITERATIONS)
 		start := time.Now()
+		secondaryPb := bar.AddBar(int64(ITERATIONS), mpb.PrependDecorators(
+			decor.Name("iterations:", decor.WCSyncSpaceR),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
+		),
+			mpb.AppendDecorators(
+				decor.AverageETA(decor.ET_STYLE_GO),
+				decor.Name(" - "),
+				decor.Percentage(decor.WC{W: 5}),
+			))
 		for j := 0; j < ITERATIONS; j++ {
 			testData := evaluation.GenerateDataFromPlanesWithNoise(planes, POINTS_PER_PLANE, utils.NormalDist{Mean: 0, Stddev: stddev})
 			calc := partitioning3D.CostCalculator{Threshold: 3 * stddev, Amplification: 3 / stddev}
 			eval := evaluation.EvaluateAlgorithm(algorithm, &calc, &testData)
 			accuracies = append(accuracies, eval.Accuracy)
+			secondaryPb.Increment()
 		}
 		elapsed := time.Since(start)
 		result.AccuracyResults[i] = AccuracyResult{Accuracies: accuracies, Time: elapsed.Milliseconds()}
+		mainPb.Increment()
 	}
 
 	jsonString, err := json.MarshalIndent(result, "", "  ")
