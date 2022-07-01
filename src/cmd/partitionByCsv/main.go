@@ -35,17 +35,10 @@ func main() {
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
 
 	var partitioningArray algorithm.PartitioningArray
-	switch *selectedAlgorithm {
-	case "GreedyJoining":
-		partitioningArray = algorithm.GreedyJoining[geometry.Vector](points, &calc)
-	case "GreedyMoving":
-		if *constraintFile != "" {
-			partitioningArray = algorithm.GreedyMovingWithConstraints[geometry.Vector](points, &calc, *constraintFile)
-		} else {
-			partitioningArray = algorithm.GreedyMoving[geometry.Vector](points, &calc)
-		}
-	default:
-		panic("The provided algorithm isn't supported!")
+	if *constraintFile != "" && *selectedAlgorithm == "GreedyMoving" {
+		partitioningArray = algorithm.GreedyMovingWithConstraints[geometry.Vector](points, &calc, *constraintFile)
+	} else {
+		partitioningArray = algorithm.AlgorithmStringToFunc[geometry.Vector](*selectedAlgorithm)(points, &calc)
 	}
 
 	// Order elements by their partition

@@ -8,9 +8,6 @@ import (
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/utils"
 )
 
-// This is the function signiture of a partitioning algorithm for 3D Vectors
-type PartAlgorithm func(*[]geometry.Vector, alg.CostCalculator[geometry.Vector]) alg.PartitioningArray
-
 // The output after an evaluation of an algorithm
 type Evaluation struct {
 	NumOfPlanesError float64
@@ -23,16 +20,11 @@ type Evaluation struct {
 func Evaluate(algorithm string, costCalc alg.CostCalculator[geometry.Vector], numOfPlanes, pointsPerPlane int, noise utils.NormalDist) Evaluation {
 	testData := GenerateDataWithNoise(numOfPlanes, pointsPerPlane, noise)
 
-	switch algorithm {
-	case "GreedyJoining":
-		return EvaluateAlgorithm(alg.GreedyJoining[geometry.Vector], costCalc, &testData)
-	default:
-		panic("This algorithm is not supported")
-	}
+	return EvaluateAlgorithm(alg.AlgorithmStringToFunc[geometry.Vector](algorithm), costCalc, &testData)
 }
 
 // Evaluates a given algorithm with the given test data
-func EvaluateAlgorithm(algorithm PartAlgorithm, costCalc alg.CostCalculator[geometry.Vector], testData *TestData) Evaluation {
+func EvaluateAlgorithm(algorithm alg.PartitioningAlgorithm[geometry.Vector], costCalc alg.CostCalculator[geometry.Vector], testData *TestData) Evaluation {
 	part := algorithm(&testData.points, costCalc)
 	numOfPlanesError := math.Abs(float64(len(utils.ToSet(part))-testData.numOfPlanes)) / float64(testData.numOfPlanes)
 	n := len(testData.points)

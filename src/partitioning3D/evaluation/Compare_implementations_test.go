@@ -15,8 +15,6 @@ var iterations, seed, verbose *int
 var randomizeParameters *bool
 var algorithm1, algorithm2 *string
 
-type AlgorithmFunction func(input *[]geometry.Vector, calc algorithm.CostCalculator[geometry.Vector]) algorithm.PartitioningArray
-
 func init() {
 	iterations = flag.Int("iterations", 5, "How many iterations should be executed to test algorithms for equality")
 	seed = flag.Int("seed", 5, "The seed for the random number generation")
@@ -36,27 +34,9 @@ func TestCompareAlgorithms(t *testing.T) {
 		return
 	}
 
-	var firstAlgorithm, secondAlgorithm AlgorithmFunction
+	firstAlgorithm := algorithm.AlgorithmStringToFunc[geometry.Vector](*algorithm1)
+	secondAlgorithm := algorithm.AlgorithmStringToFunc[geometry.Vector](*algorithm2)
 
-	switch *algorithm1 {
-	case "GreedyJoining":
-		firstAlgorithm = algorithm.GreedyJoining[geometry.Vector]
-	case "GreedyMoving":
-		firstAlgorithm = algorithm.GreedyMoving[geometry.Vector]
-	default:
-		t.Error("The specified algorithm1 is not supported")
-		t.FailNow()
-	}
-
-	switch *algorithm2 {
-	case "GreedyJoining":
-		secondAlgorithm = algorithm.GreedyJoining[geometry.Vector]
-	case "GreedyMoving":
-		secondAlgorithm = algorithm.GreedyMoving[geometry.Vector]
-	default:
-		t.Error("The specified algorithm2 is not supported")
-		t.FailNow()
-	}
 	rand.Seed(int64(*seed))
 
 	for i := 0; i < *iterations; i++ {
@@ -77,7 +57,7 @@ func TestCompareAlgorithms(t *testing.T) {
 	}
 }
 
-func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm AlgorithmFunction) bool {
+func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm algorithm.PartitioningAlgorithm[geometry.Vector]) bool {
 	success := true
 	testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, utils.NormalDist{Mean: *mean, Stddev: *stddev})
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
