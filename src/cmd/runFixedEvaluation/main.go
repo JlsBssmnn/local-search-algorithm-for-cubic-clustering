@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
@@ -46,6 +48,14 @@ func main() {
 	seed := time.Now().Unix()
 	rand.Seed(seed)
 
+	if _, err := os.Stat(*output); !errors.Is(err, os.ErrNotExist) {
+		var replace string
+		fmt.Printf("The output file seems to exist already, do you want to overwrite it [y/n]?: ")
+		fmt.Scanf("%s", &replace)
+		if !(strings.ToLower(replace) == "y") && !(strings.ToLower(replace) == "yes") {
+			os.Exit(0)
+		}
+	}
 	file, err := os.Create(*output)
 	if err != nil {
 		panic("Could not open the specified output file")
