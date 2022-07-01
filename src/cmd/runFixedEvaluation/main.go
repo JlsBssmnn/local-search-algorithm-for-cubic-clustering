@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ var STDDEV_VALUES = []float64{0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04
 const POINTS_PER_PLANE = 33
 
 type Result struct {
+	GitCommit       string
 	Algorithm       string
 	Iterations      int
 	StddevValues    []float64
@@ -41,6 +43,14 @@ type AccuracyResult struct {
 }
 
 func main() {
+	out, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	var gitCommit string
+	if err != nil {
+		gitCommit = string(err.Error())
+	} else {
+		gitCommit = string(out[:len(out)-1])
+	}
+
 	selectedAlgorithm := flag.String("algorithm", "", "The algorithm which should be used for the partitioning")
 	output := flag.String("output", "", "Where the output of the evaluation should be written to, the output will be in json")
 	flag.Parse()
@@ -67,6 +77,7 @@ func main() {
 	planes := []geometry.Vector{{X: 1, Y: 0, Z: 0}, {X: 0, Y: 1, Z: 0}, {X: 0, Y: 0, Z: 1}}
 
 	result := Result{
+		GitCommit:       gitCommit,
 		Algorithm:       *selectedAlgorithm,
 		Iterations:      ITERATIONS,
 		StddevValues:    STDDEV_VALUES,
