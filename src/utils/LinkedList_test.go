@@ -79,3 +79,40 @@ func TestWithVectors(t *testing.T) {
 		}
 	}
 }
+
+func TestAddList(t *testing.T) {
+	l1 := CreateLinkedList(1, 2, 3, 4, 5)
+	l2 := CreateLinkedList(6, 7, 8, 9, 10)
+
+	l1.AddList(*l2)
+
+	iter := l1.Iterator()
+	i := 0
+	for iter.HasNext() {
+		i++
+		assert.Equal(t, i, iter.Next())
+	}
+	assert.Equal(t, 10, i)
+	assert.Equal(t, 10, l1.Length())
+
+	iter2 := l2.Iterator()
+	i = 5
+	for iter2.HasNext() {
+		i++
+		assert.Equal(t, i, iter2.Next())
+	}
+	assert.Equal(t, 10, i)
+	assert.Equal(t, 5, l2.Length())
+
+	l3 := CreateLinkedList(11, 12, 13)
+	l1.AddList(*l3)
+
+	iter = l1.Iterator()
+	i = 0
+	for iter.HasNext() {
+		i++
+		assert.Equal(t, i, iter.Next())
+	}
+	assert.Equal(t, 13, i)
+	assert.Equal(t, 13, l1.Length())
+}

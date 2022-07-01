@@ -18,6 +18,18 @@ type CostCalculator[data any] interface {
 // partition the data point belongs to.
 type PartitioningArray []int
 
+// Initializes the PartitioningArray into a partitioning of singleton sets. `n` is the
+// number of elements that are partitioned. Singleton sets are a starting point for a lot of algorithms.
+func (array *PartitioningArray) InitializeSingletonSets(n int) {
+	*array = make(PartitioningArray, n)
+	for i := range *array {
+		(*array)[i] = i
+	}
+}
+
+// This is the function signiture which every partitioning algorithm should have
+type PartitioningAlgorithm[data any] func(input *[]data, calc CostCalculator[data]) PartitioningArray
+
 // This datastructure can store whether two elements should be in different partitions.
 // The greedy moving algorithm can use it during it's execution to ensure that the
 // resulting partitioning satisfies the constraints.

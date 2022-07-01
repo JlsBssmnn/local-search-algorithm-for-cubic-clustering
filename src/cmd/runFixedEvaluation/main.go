@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	alg "github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
+	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/partitioning3D/evaluation"
@@ -52,15 +52,7 @@ func main() {
 	}
 	defer file.Close()
 
-	var algorithm evaluation.PartAlgorithm
-	switch *selectedAlgorithm {
-	case "GreedyJoining":
-		algorithm = alg.GreedyJoining[geometry.Vector]
-	case "GreedyMoving":
-		algorithm = alg.GreedyMoving[geometry.Vector]
-	default:
-		panic("Algorithm not supported")
-	}
+	algorithm := algorithm.AlgorithmStringToFunc[geometry.Vector](*selectedAlgorithm)
 
 	planes := []geometry.Vector{{X: 1, Y: 0, Z: 0}, {X: 0, Y: 1, Z: 0}, {X: 0, Y: 0, Z: 1}}
 

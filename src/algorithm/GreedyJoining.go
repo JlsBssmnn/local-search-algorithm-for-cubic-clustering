@@ -206,10 +206,7 @@ func GetAlgorithm[T any](input *[]T, calc CostCalculator[T]) GreedyJoiningAlgori
 
 // Sets up the costs and the partitioning into singleton sets of the algorithm
 func (algorithm *GreedyJoiningAlgorithm[data]) InitializeAlgorithm() ([2]int, float64) {
-	algorithm.partitioning = make(PartitioningArray, len(*algorithm.input))
-	for i := range algorithm.partitioning {
-		algorithm.partitioning[i] = i
-	}
+	algorithm.partitioning.InitializeSingletonSets(len(*algorithm.input))
 	costs, bestJoinOverall, bestJoinCostOverall := InitializeCosts(algorithm.input, algorithm.calc)
 	algorithm.costs = &costs
 	return bestJoinOverall, bestJoinCostOverall

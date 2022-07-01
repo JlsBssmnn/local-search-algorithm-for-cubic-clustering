@@ -664,11 +664,10 @@ func (algorithm *GreedyMovingAlgorithm[data]) secondStage(i int) {
 func (algorithm *GreedyMovingAlgorithm[data]) Initialize() ([3]int, float64) {
 	algorithm.InitializeTripleCosts()
 	n := len(*algorithm.input)
-	algorithm.partitioning = make(PartitioningArray, n)
-	algorithm.partitions = make(map[int]*[]int, n)
+	algorithm.partitioning.InitializeSingletonSets(n)
 
+	algorithm.partitions = make(map[int]*[]int, n)
 	for i := 0; i < n; i++ {
-		algorithm.partitioning[i] = i
 		algorithm.partitions[i] = &[]int{i}
 	}
 	return algorithm.InitializeCosts()

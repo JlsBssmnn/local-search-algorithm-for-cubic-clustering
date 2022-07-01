@@ -47,3 +47,12 @@ func TestParseConstraints(t *testing.T) {
 		}
 	}
 }
+
+func TestInitializeSingletonSets(t *testing.T) {
+	var part PartitioningArray
+	part.InitializeSingletonSets(50)
+
+	for i, v := range part {
+		assert.Equal(t, i, v)
+	}
+}
