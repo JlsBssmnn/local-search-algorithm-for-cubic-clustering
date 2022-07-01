@@ -33,6 +33,12 @@ func (list *LinkedList[T]) Add(element T) {
 	list.length++
 }
 
+func (list *LinkedList[T]) AddList(otherList LinkedList[T]) {
+	list.lastElement.next = otherList.firstElement
+	list.lastElement = otherList.lastElement
+	list.length += otherList.length
+}
+
 func (list *LinkedList[T]) Length() int {
 	return list.length
 }
