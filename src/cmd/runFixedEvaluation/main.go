@@ -53,6 +53,7 @@ func main() {
 
 	selectedAlgorithm := flag.String("algorithm", "", "The algorithm which should be used for the partitioning")
 	output := flag.String("output", "", "Where the output of the evaluation should be written to, the output will be in json")
+	verbose := flag.Int("verbose", 0, "0: nothing will be printed, 1: Progress bars will indicate the progress of the evaluation")
 	flag.Parse()
 
 	seed := time.Now().Unix()
@@ -87,22 +88,12 @@ func main() {
 	}
 	defer printErrors(result)
 
-	bar := mpb.New()
-	mainPb := bar.AddBar(int64(len(STDDEV_VALUES)), mpb.PrependDecorators(
-		decor.Name("Stddev values:", decor.WCSyncSpaceR),
-		decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
-	),
-		mpb.AppendDecorators(
-			decor.AverageETA(decor.ET_STYLE_GO),
-			decor.Name(" - "),
-			decor.Percentage(decor.WC{W: 5}),
-		))
-
-	for i, stddev := range STDDEV_VALUES {
-		accuracies := make([]float64, 0, ITERATIONS)
-		start := time.Now()
-		secondaryPb := bar.AddBar(int64(ITERATIONS), mpb.PrependDecorators(
-			decor.Name("iterations:", decor.WCSyncSpaceR),
+	var bar *mpb.Progress
+	var mainPb *mpb.Bar
+	if *verbose >= 1 {
+		bar = mpb.New()
+		mainPb = bar.AddBar(int64(len(STDDEV_VALUES)), mpb.PrependDecorators(
+			decor.Name("Stddev values:", decor.WCSyncSpaceR),
 			decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
 		),
 			mpb.AppendDecorators(
@@ -110,16 +101,37 @@ func main() {
 				decor.Name(" - "),
 				decor.Percentage(decor.WC{W: 5}),
 			))
+	}
+
+	for i, stddev := range STDDEV_VALUES {
+		accuracies := make([]float64, 0, ITERATIONS)
+		start := time.Now()
+		var secondaryPb *mpb.Bar
+		if *verbose >= 1 {
+			secondaryPb = bar.AddBar(int64(ITERATIONS), mpb.PrependDecorators(
+				decor.Name("iterations:", decor.WCSyncSpaceR),
+				decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
+			),
+				mpb.AppendDecorators(
+					decor.AverageETA(decor.ET_STYLE_GO),
+					decor.Name(" - "),
+					decor.Percentage(decor.WC{W: 5}),
+				))
+		}
 		for j := 0; j < ITERATIONS; j++ {
 			testData := evaluation.GenerateDataFromPlanesWithNoise(planes, POINTS_PER_PLANE, utils.NormalDist{Mean: 0, Stddev: stddev})
 			calc := partitioning3D.CostCalculator{Threshold: 3 * stddev, Amplification: 3 / stddev}
 			eval := evaluation.EvaluateAlgorithm(algorithm, &calc, &testData)
 			accuracies = append(accuracies, eval.Accuracy)
-			secondaryPb.Increment()
+			if secondaryPb != nil {
+				secondaryPb.Increment()
+			}
 		}
 		elapsed := time.Since(start)
 		result.AccuracyResults[i] = AccuracyResult{Accuracies: accuracies, Time: elapsed.Milliseconds()}
-		mainPb.Increment()
+		if mainPb != nil {
+			mainPb.Increment()
+		}
 	}
 
 	jsonString, err := json.MarshalIndent(result, "", "  ")
