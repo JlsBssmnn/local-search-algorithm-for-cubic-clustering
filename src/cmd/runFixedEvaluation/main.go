@@ -27,6 +27,8 @@ var STDDEV_VALUES = []float64{0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04
 
 const POINTS_PER_PLANE = 33
 
+var bar = mpb.New()
+
 type Result struct {
 	GitCommit       string
 	Algorithm       string
@@ -35,6 +37,15 @@ type Result struct {
 	PointsPerPlane  int
 	Seed            int64
 	AccuracyResults []AccuracyResult
+	outputFile      *os.File
+}
+
+func (result *Result) write() {
+	jsonString, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		panic(fmt.Sprintf("Cannot transform go struct to json for the following go struct: %#v", result))
+	}
+	ioutil.WriteFile(result.outputFile.Name(), jsonString, os.ModePerm)
 }
 
 type AccuracyResult struct {
@@ -85,60 +96,32 @@ func main() {
 		PointsPerPlane:  POINTS_PER_PLANE,
 		Seed:            seed,
 		AccuracyResults: make([]AccuracyResult, len(STDDEV_VALUES)),
+		outputFile:      file,
 	}
 	defer printErrors(result)
 
-	var bar *mpb.Progress
-	var mainPb *mpb.Bar
-	if *verbose >= 1 {
-		bar = mpb.New()
-		mainPb = bar.AddBar(int64(len(STDDEV_VALUES)), mpb.PrependDecorators(
-			decor.Name("Stddev values:", decor.WCSyncSpaceR),
-			decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
-		),
-			mpb.AppendDecorators(
-				decor.AverageETA(decor.ET_STYLE_GO),
-				decor.Name(" - "),
-				decor.Percentage(decor.WC{W: 5}),
-			))
-	}
+	mainPb := createPb(int64(len(STDDEV_VALUES)), "Stddev values:", *verbose)
 
 	for i, stddev := range STDDEV_VALUES {
-		accuracies := make([]float64, 0, ITERATIONS)
+		result.AccuracyResults[i] = AccuracyResult{Accuracies: make([]float64, 0, ITERATIONS), Time: 0}
 		start := time.Now()
-		var secondaryPb *mpb.Bar
-		if *verbose >= 1 {
-			secondaryPb = bar.AddBar(int64(ITERATIONS), mpb.PrependDecorators(
-				decor.Name("iterations:", decor.WCSyncSpaceR),
-				decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
-			),
-				mpb.AppendDecorators(
-					decor.AverageETA(decor.ET_STYLE_GO),
-					decor.Name(" - "),
-					decor.Percentage(decor.WC{W: 5}),
-				))
-		}
+		var secondaryPb = createPb(int64(ITERATIONS), "iterations:", *verbose)
 		for j := 0; j < ITERATIONS; j++ {
 			testData := evaluation.GenerateDataFromPlanesWithNoise(planes, POINTS_PER_PLANE, utils.NormalDist{Mean: 0, Stddev: stddev})
 			calc := partitioning3D.CostCalculator{Threshold: 3 * stddev, Amplification: 3 / stddev}
 			eval := evaluation.EvaluateAlgorithm(algorithm, &calc, &testData)
-			accuracies = append(accuracies, eval.Accuracy)
+
+			result.AccuracyResults[i].Accuracies = append(result.AccuracyResults[i].Accuracies, eval.Accuracy)
+			result.AccuracyResults[i].Time = time.Since(start).Milliseconds()
+			result.write()
 			if secondaryPb != nil {
 				secondaryPb.Increment()
 			}
 		}
-		elapsed := time.Since(start)
-		result.AccuracyResults[i] = AccuracyResult{Accuracies: accuracies, Time: elapsed.Milliseconds()}
 		if mainPb != nil {
 			mainPb.Increment()
 		}
 	}
-
-	jsonString, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		panic(fmt.Sprintf("Cannot transform go struct to json for the following go struct: %#v", result))
-	}
-	ioutil.WriteFile(*output, jsonString, os.ModePerm)
 }
 
 func printErrors(result Result) {
@@ -147,4 +130,20 @@ func printErrors(result Result) {
 		fmt.Printf("Error received for the following evaluation: %#v\n", result)
 		fmt.Println("Error:", err)
 	}
+}
+
+func createPb(total int64, name string, verbose int) *mpb.Bar {
+	var mainPb *mpb.Bar
+	if verbose >= 1 {
+		mainPb = bar.AddBar(total, mpb.PrependDecorators(
+			decor.Name(name, decor.WCSyncSpaceR),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncSpaceR),
+		),
+			mpb.AppendDecorators(
+				decor.AverageETA(decor.ET_STYLE_GO),
+				decor.Name(" - "),
+				decor.Percentage(decor.WC{W: 5}),
+			))
+	}
+	return mainPb
 }
