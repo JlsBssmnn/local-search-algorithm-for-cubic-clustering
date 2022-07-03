@@ -215,3 +215,16 @@ func InsertInOrder[T constraints.Ordered](slicePtr *[]T, element T) {
 	}
 	*slicePtr = append(*slicePtr, element)
 }
+
+func EqualSlices[T comparable](slice1, slice2 []T) bool {
+	if len(slice1) != len(slice2) {
+		return false
+	}
+
+	for i, val := range slice1 {
+		if val != slice2[i] {
+			return false
+		}
+	}
+	return true
+}
