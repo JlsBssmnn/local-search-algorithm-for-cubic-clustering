@@ -176,7 +176,7 @@ func main() {
 		for j := startIteration; j < ITERATIONS; j++ {
 			start := time.Now()
 			testData := evaluation.GenerateDataFromPlanesWithNoise(planes, POINTS_PER_PLANE, utils.NormalDist{Mean: 0, Stddev: stddev})
-			calc := partitioning3D.CostCalculator{Threshold: 3 * stddev, Amplification: 3 / stddev}
+			calc := partitioning3D.CostCalculator{Threshold: 3 * stddev, Amplification: 1 / stddev}
 			eval := evaluation.EvaluateAlgorithm(algorithm, &calc, &testData)
 
 			result.AccuracyResults[i].Accuracies = append(result.AccuracyResults[i].Accuracies, eval.Accuracy)
