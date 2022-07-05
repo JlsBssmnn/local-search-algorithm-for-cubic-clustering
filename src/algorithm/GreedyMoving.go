@@ -135,7 +135,10 @@ func (cost *GreedyMovingCosts) moveCost(x, y int) float64 {
 // a singleton set.
 func (algorithm *GreedyMovingAlgorithm[data]) validateDoubleMove(element, singleton int) {
 	oem := (*algorithm.costs)[element].moves[singleton]
-	if oem.bestMove > -1 {
+	if oem.doubleMoves == nil {
+		// edge case: there are no double moves for this element, so we can't consider this move
+		algorithm.invalidateCost(element, singleton)
+	} else if oem.bestMove > -1 {
 		return
 	}
 	oem.bestMove *= -1
