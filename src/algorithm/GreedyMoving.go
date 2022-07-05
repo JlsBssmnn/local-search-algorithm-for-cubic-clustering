@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"fmt"
 	"math"
 	"sync"
 
@@ -692,8 +693,20 @@ func (algorithm *GreedyMovingAlgorithm[data]) Initialize() ([3]int, float64) {
 func GreedyMoving[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
 	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc}
 	nextMove, cost := algorithm.Initialize()
+	lastMoves := [10]struct {
+		move [3]int
+		cost float64
+	}{}
+	index := 0
+	i := 0
 
 	for cost < 0 && nextMove[1] != -1 {
+		i++
+		lastMoves[index].move = nextMove
+		lastMoves[index].cost = cost
+		index = (index + 1) % 10
+		detectCycle(lastMoves, i)
+
 		newNextMove, newCost := algorithm.Move(nextMove[0], nextMove[1])
 		if nextMove[2] != -1 {
 			nextMove, cost = algorithm.Move(nextMove[0], nextMove[2])
@@ -729,4 +742,24 @@ func GreedyMovingWithConstraints[data any](input *[]data, calc CostCalculator[da
 		}
 	}
 	return algorithm.partitioning
+}
+
+func detectCycle(lastMoves [10]struct {
+	move [3]int
+	cost float64
+}, iteration int) {
+
+	for i, action := range lastMoves {
+		if action.move == [3]int{0, 0, 0} && action.cost == 0.0 {
+			continue
+		}
+		for j := i + 1; j < len(lastMoves); j++ {
+			oAction := lastMoves[j]
+			if oAction.move == [3]int{0, 0, 0} && oAction.cost == 0.0 {
+				continue
+			} else if action.move == oAction.move && action.cost == oAction.cost {
+				panic(fmt.Sprintf("Cycle detected at algorithm iteration %d", iteration))
+			}
+		}
+	}
 }
