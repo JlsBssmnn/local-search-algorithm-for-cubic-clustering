@@ -566,8 +566,16 @@ func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource,
 				algorithm.invalidateDoubleMove(i, UminSource)
 			}
 		} else {
-			(*algorithm.costs)[i].moves[UminSource].cost = -(*algorithm.costs)[i].moves[UminDest].cost
-			newRemoveCost := -(algorithm.getRealMoveCost(i, UminDest) - oem.cost)
+			var newRemoveCost float64
+			if (*algorithm.costs)[i].moves[UminDest].bestMove < 0 {
+				// the destination partition has more than 1 element, so the stored cost is not future
+				(*algorithm.costs)[i].moves[UminSource].cost = -(*algorithm.costs)[i].moves[UminDest].cost
+				newRemoveCost = -(algorithm.getRealMoveCost(i, UminDest) - oem.cost)
+			} else {
+				// the stored cost is future so the actual cost is computed differently
+				(*algorithm.costs)[i].moves[UminSource].cost = -oem.cost
+				newRemoveCost = 0
+			}
 			algorithm.removeCosts.Set(i, -oem.cost+newRemoveCost)
 			algorithm.invalidateCost(i, UminDest)
 			oem.cost = newRemoveCost
