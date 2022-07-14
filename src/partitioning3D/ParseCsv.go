@@ -51,7 +51,7 @@ func parseCsv(file *os.File) (*[]geometry.Vector, error) {
 
 	data := []geometry.Vector{}
 
-	// find out column indicies of x, y and z coordinate
+	// find out column indices of x, y and z coordinate
 	xIdx, yIdx, zIdx := -1, -1, -1
 	for i, value := range row {
 		switch strings.ToLower(value) {

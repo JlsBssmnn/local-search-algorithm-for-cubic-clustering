@@ -18,7 +18,7 @@ func TestParseConstraints(t *testing.T) {
 	assert.Equal(t, Edge{4, 8}, allConstraints.DifferentPartition[2])
 	assert.Equal(t, Edge{8, 10}, allConstraints.DifferentPartition[3])
 
-	constraints, partitions := translatetConstraints(allConstraints, 11)
+	constraints, partitions := translateConstraints(allConstraints, 11)
 
 	assert.False(t, constraints.Get(1, 2))
 	assert.False(t, constraints.Get(0, 1))

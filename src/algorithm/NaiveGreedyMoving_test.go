@@ -8,7 +8,7 @@ import (
 )
 
 func TestDataStructure(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	algorithm := NaiveGreedyMovingAlgorithm[string]{input: &dataPoints, calc: &CharCostCalc{}}
 	algorithm.initialize()
@@ -46,7 +46,7 @@ func TestDataStructure(t *testing.T) {
 }
 
 func TestFindBestMove(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	algorithm := NaiveGreedyMovingAlgorithm[string]{input: &dataPoints, calc: &CharCostCalc{}}
 	algorithm.initialize()

@@ -41,7 +41,7 @@ func Contains[T comparable](slice []T, element T) bool {
 	return false
 }
 
-// Returns the index of the first occurence of the given
+// Returns the index of the first occurrence of the given
 // element in the given slice. If it's not found -1 is returned.
 func Find[T comparable](slice []T, element T) int {
 	for i, e := range slice {
@@ -109,7 +109,7 @@ func AllDifferent[T comparable](slice []T) bool {
 
 // Checks if the given function returns true for every application
 // on a slice element
-func All[T any](slice []T, function func(elemenet T) bool) bool {
+func All[T any](slice []T, function func(element T) bool) bool {
 	for _, element := range slice {
 		if !function(element) {
 			return false
@@ -120,7 +120,7 @@ func All[T any](slice []T, function func(elemenet T) bool) bool {
 
 // Checks if the given function returns true for any application
 // on a slice element
-func Any[T any](slice []T, function func(elemenet T) bool) bool {
+func Any[T any](slice []T, function func(element T) bool) bool {
 	for _, element := range slice {
 		if function(element) {
 			return true
@@ -187,7 +187,7 @@ func ToSet[T comparable](slice []T) []T {
 	return set
 }
 
-// Deletes the first occurence of the given element in the slice
+// Deletes the first occurrence of the given element in the slice
 // of the given pointer
 func DeleteByElement[T comparable](slicePtr *[]T, element T) {
 	index := 0

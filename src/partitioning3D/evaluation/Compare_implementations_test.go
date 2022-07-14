@@ -19,7 +19,7 @@ func init() {
 	iterations = flag.Int("iterations", 5, "How many iterations should be executed to test algorithms for equality")
 	seed = flag.Int("seed", 5, "The seed for the random number generation")
 	randomizeParameters = flag.Bool("randomizeParameters", true, `If true the parameters
-		threshold, numOfPlanes, pointsPerPlane, stddev, mean will be randomly choosen in each iteration, otherwise
+		threshold, numOfPlanes, pointsPerPlane, stddev, mean will be randomly chosen in each iteration, otherwise
 		the parameters will be according to the command-line arguments`)
 	algorithm1 = flag.String("algorithm1", "", "The first algorithm in the equality test")
 	algorithm2 = flag.String("algorithm2", "", "The second algorithm in the equality test")
@@ -50,7 +50,7 @@ func TestCompareAlgorithms(t *testing.T) {
 
 		success := testForEquality(t, firstAlgorithm, secondAlgorithm)
 		if !success {
-			t.Errorf("Partitions were not equal at interation %d", i)
+			t.Errorf("Partitions were not equal at iteration %d", i)
 		} else {
 			t.Log("Partitions were equal!")
 		}

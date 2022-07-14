@@ -151,7 +151,7 @@ func main() {
 	planes := []geometry.Vector{{X: 1, Y: 0, Z: 0}, {X: 0, Y: 1, Z: 0}, {X: 0, Y: 0, Z: 1}}
 	defer printErrors(result)
 
-	// Determine the starting point if execution of evalution is continued
+	// Determine the starting point if execution of evaluation is continued
 	stddevOffset := len(result.AccuracyResults)
 	if stddevOffset > 0 && len(result.AccuracyResults[stddevOffset-1].Accuracies) < config.Iterations {
 		stddevOffset--

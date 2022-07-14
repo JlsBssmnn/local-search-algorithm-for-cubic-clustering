@@ -35,25 +35,25 @@ type TwoPartitionsCosts struct {
 
 // -------------------------- Methods for the cost data structure and the GreedyJoiningAlgorithm struct
 
-// Verify that the given indicies can be used for operations on the
+// Verify that the given indices can be used for operations on the
 // cost data structure
-func (costs *Costs) verifyIndicies(indicies ...*int) {
-	if !utils.AllDifferent(utils.Map(indicies, func(element *int) int {
+func (costs *Costs) verifyIndices(indices ...*int) {
+	if !utils.AllDifferent(utils.Map(indices, func(element *int) int {
 		return *element
 	})) {
 		panic("You input one partition more than once")
-	} else if utils.Any(indicies, func(x *int) bool { return *x < 0 }) {
-		panic("Indicies to the partitions must not be negative")
-	} else if utils.Any(indicies, func(x *int) bool { return *x > len(*costs) }) {
-		panic("Partition indicies are out of bounds")
+	} else if utils.Any(indices, func(x *int) bool { return *x < 0 }) {
+		panic("Indices to the partitions must not be negative")
+	} else if utils.Any(indices, func(x *int) bool { return *x > len(*costs) }) {
+		panic("Partition indices are out of bounds")
 	}
-	utils.SortInts(indicies...)
+	utils.SortInts(indices...)
 }
 
-// Extracts the join cost when joining the 3 partitions at the three given indicies.
-// If this cost is not stored in the data stucture an error will be returned.
+// Extracts the join cost when joining the 3 partitions at the three given indices.
+// If this cost is not stored in the data structure an error will be returned.
 func (costs *Costs) TripleJoinCost(i, j, k int) (float64, error) {
-	costs.verifyIndicies(&i, &j, &k)
+	costs.verifyIndices(&i, &j, &k)
 
 	if triples := (*((*costs)[i]).twoPartitionsCosts[j-i-1]).tripleJoinCosts; triples != nil {
 		return (*triples)[k-j-1], nil
@@ -62,12 +62,12 @@ func (costs *Costs) TripleJoinCost(i, j, k int) (float64, error) {
 	}
 }
 
-// Extracts the join cost when joining the 2 partitions at the two given indicies.
+// Extracts the join cost when joining the 2 partitions at the two given indices.
 // It also returns whether these costs are future costs (so both partitions contain one
 // element and the costs correspond to a join of 3 partitions) where the second return result
-// will be true or if they are the real costs for joining the two paritions (return will be false)
+// will be true or if they are the real costs for joining the two partitions (return will be false)
 func (costs *Costs) JoinCost(i, j int) (float64, bool) {
-	costs.verifyIndicies(&i, &j)
+	costs.verifyIndices(&i, &j)
 
 	join := (*((*costs)[i]).twoPartitionsCosts[j-i-1])
 
@@ -92,7 +92,7 @@ func (costs *Costs) RealJoinCost(i, j int) float64 {
 // third dimension where the cost of joining some partition with i
 // and j is located
 func (costs *Costs) GetIndex(i, j int) int {
-	costs.verifyIndicies(&i, &j)
+	costs.verifyIndices(&i, &j)
 	return j - i - 1
 }
 
@@ -213,7 +213,7 @@ func (algorithm *GreedyJoiningAlgorithm[data]) InitializeAlgorithm() ([2]int, fl
 }
 
 // Initializes the cost data structure for singleton sets of the input data
-// It returns this data structure and two indicies of partitions which have the best
+// It returns this data structure and two indices of partitions which have the best
 // join cost as well as the cost.
 func InitializeCosts[data any](input *[]data, calc CostCalculator[data]) (Costs, [2]int, float64) {
 	size := len(*input)
@@ -263,11 +263,11 @@ func InitializeCosts[data any](input *[]data, calc CostCalculator[data]) (Costs,
 }
 
 // This function adjusts the cost data structure to the new partitioning
-// which arises when joining the two partitions of which the indicies are
-// given to this function. It returns the indicies of two partitions
+// which arises when joining the two partitions of which the indices are
+// given to this function. It returns the indices of two partitions
 // which have the best join cost in the new data structure and the cost.
 func (algorithm *GreedyJoiningAlgorithm[data]) Join(part1, part2 int) ([2]int, float64) {
-	algorithm.costs.verifyIndicies(&part1, &part2)
+	algorithm.costs.verifyIndices(&part1, &part2)
 
 	previousJoinCost := algorithm.costs.RealJoinCost(part1, part2)
 
@@ -346,7 +346,7 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 					twoPartitionsCosts.joinCost = newTripleCost
 					twoPartitionsCosts.bestJoin = index3DPart1
 				} else if twoPartitionsCosts.bestJoin == index3DPart1 {
-					// in this case the previous minimum involed either part1 or part2, but since they have been joined,
+					// in this case the previous minimum involved either part1 or part2, but since they have been joined,
 					// the new minimum must be found
 					joinCost, bestJoin := utils.MinAndArgMin(*triples)
 					twoPartitionsCosts.joinCost = joinCost

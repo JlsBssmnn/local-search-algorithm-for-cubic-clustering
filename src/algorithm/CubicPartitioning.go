@@ -13,7 +13,7 @@ type CostCalculator[data any] interface {
 	TripleCost(d1, d2, d3 data) float64
 }
 
-// Represents a partitioning of data points. The indicies of the array
+// Represents a partitioning of data points. The indices of the array
 // correspond to the data points and the values of the array to the
 // partition the data point belongs to.
 type PartitioningArray []int
@@ -27,17 +27,17 @@ func (array *PartitioningArray) InitializeSingletonSets(n int) {
 	}
 }
 
-// This is the function signiture which every partitioning algorithm should have
+// This is the function signature which every partitioning algorithm should have
 type PartitioningAlgorithm[data any] func(input *[]data, calc CostCalculator[data]) PartitioningArray
 
-// This datastructure can store whether two elements should be in different partitions.
+// This data structure can store whether two elements should be in different partitions.
 // The greedy moving algorithm can use it during it's execution to ensure that the
 // resulting partitioning satisfies the constraints.
 //
-// The contraints can be seen as a 2D symmetric matrix where the values in the matrix are
-// booleans. If a bool is true, then the column index and row index seen as indicies for
+// The constraints can be seen as a 2D symmetric matrix where the values in the matrix are
+// booleans. If a bool is true, then the column index and row index seen as indices for
 // the input elements cannot be in the same partition. This data structure stores
-// not the entire matrix but only one triangle to be as space efficiant as possible.
+// not the entire matrix but only one triangle to be as space efficient as possible.
 type Constraints struct {
 	array         []bool
 	numOfElements int
@@ -70,7 +70,7 @@ func (array *Constraints) getIndex(i, j int) int {
 	return matrixRow + columnOffset
 }
 
-// Returns the value that would be in the ith row and jth column (or vice verca) in the 2D contraint matrix
+// Returns the value that would be in the ith row and jth column (or vice versa) in the 2D constraint matrix
 func (array *Constraints) Get(i, j int) bool {
 	if index := array.getIndex(i, j); index == -1 {
 		return false
@@ -82,7 +82,7 @@ func (array *Constraints) Get(i, j int) bool {
 // Sets the value for element i and j to true
 func (array *Constraints) setTrue(i, j int) {
 	if index := array.getIndex(i, j); index == -1 {
-		panic("Specified indicies for constraints are invalid for this context")
+		panic("Specified indices for constraints are invalid for this context")
 	} else {
 		array.array[array.getIndex(i, j)] = true
 	}
@@ -112,13 +112,13 @@ func parseConstraints(path string) *AllConstraints {
 	validator := validator.New()
 	err = validator.Struct(allConstraints)
 	if err != nil {
-		panic("Contraint file is not correct")
+		panic("Constraint file is not correct")
 	}
 
 	return &allConstraints
 }
 
-func translatetConstraints(allConstraints *AllConstraints, length int) (constraints Constraints, partitions PrecomputedPartitions) {
+func translateConstraints(allConstraints *AllConstraints, length int) (constraints Constraints, partitions PrecomputedPartitions) {
 	constraints = Constraints{array: make([]bool, (length*(length-1))/2), numOfElements: length}
 	for _, edge := range allConstraints.DifferentPartition {
 		constraints.setTrue(edge[0], edge[1])
@@ -135,7 +135,7 @@ func translatetConstraints(allConstraints *AllConstraints, length int) (constrai
 		disjointSets[representative1] = representative0
 	}
 
-	// create the precomputed partitions out of the disjoint set datastructure
+	// create the precomputed partitions out of the disjoint set data structure
 	partitions = make(PrecomputedPartitions)
 	for element, value := range disjointSets {
 		representative := disjointSets.getRepresentative(element)

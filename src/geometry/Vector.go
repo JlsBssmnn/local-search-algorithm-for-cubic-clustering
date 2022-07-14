@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-// A Vector in a 3D real-valued vectorspace
+// A Vector in a 3D real-valued vector space
 type Vector struct {
 	X float64
 	Y float64

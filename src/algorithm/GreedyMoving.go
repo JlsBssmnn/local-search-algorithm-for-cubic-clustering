@@ -121,7 +121,7 @@ func (algorithm *GreedyMovingAlgorithm[data]) invalidateCost(element1, element2 
 }
 
 // Makes the cost of moving element1 into the partition of element2 valid if it's not forbidden by
-// the constaints
+// the constraints
 func (algorithm *GreedyMovingAlgorithm[data]) validateCost(element1, element2 int) {
 	(*algorithm.costs)[element1].moves[element2].valid = !algorithm.constraints.Get(element1, element2)
 }
@@ -220,7 +220,7 @@ func (algorithm *GreedyMovingAlgorithm[data]) updateCostSecondDim(element int, i
 	}
 }
 
-// Gets the costs that arrise when moving the given element into the partition of the given destination element.
+// Gets the costs that arise when moving the given element into the partition of the given destination element.
 // Only the costs that occur in the destination partition are considered.
 func (algorithm *GreedyMovingAlgorithm[data]) getRealMoveCost(element, destination int) float64 {
 	oem := (*algorithm.costs)[element].moves[destination]
@@ -550,7 +550,7 @@ func (algorithm *GreedyMovingAlgorithm[data]) firstStage(i, element, UminSource,
 		oem := (*algorithm.costs)[i].moves[i]
 
 		if UminSource == -1 {
-			// The partition where the moved element is comming from is a singleton
+			// The partition where the moved element is coming from is a singleton
 			algorithm.invalidateCost(i, UminDest)
 			newRemoveCost := -(algorithm.getRealMoveCost(i, UminDest) - oem.cost)
 
@@ -721,7 +721,7 @@ func GreedyMoving[data any](input *[]data, calc CostCalculator[data]) Partitioni
 // The same as the ImprovedGreedyMoving algorithm but you can specify the path to a constraint
 // file. These constraints will be considered by the algorithm.
 func GreedyMovingWithConstraints[data any](input *[]data, calc CostCalculator[data], path string) PartitioningArray {
-	constraints, precomputedPartitions := translatetConstraints(parseConstraints(path), len(*input))
+	constraints, precomputedPartitions := translateConstraints(parseConstraints(path), len(*input))
 	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc, constraints: &constraints}
 
 	nextMove, cost := algorithm.Initialize()

@@ -11,7 +11,7 @@ import (
 var algorithm GreedyJoiningAlgorithm[string]
 
 func init() {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	costs, _, _ := InitializeCosts[string](&dataPoints, CharCostCalc{})
 	algorithm = GreedyJoiningAlgorithm[string]{costs: &costs, input: &dataPoints, calc: &CharCostCalc{}, partitioning: []int{}}
@@ -30,7 +30,7 @@ func (calc CharCostCalc) TripleCost(c1, c2, c3 string) float64 {
 }
 
 func TestInitializeCosts(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	costs, bestJoin, bestJoinCost := InitializeCosts[string](&dataPoints, CharCostCalc{})
 	t.Run("Test length of costs in first dimension", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestInitializeCosts(t *testing.T) {
 }
 
 func TestJoinPart1is0(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	costs, _, _ := InitializeCosts[string](&dataPoints, CharCostCalc{})
 	algorithm := GreedyJoiningAlgorithm[string]{costs: &costs, input: &dataPoints, calc: &CharCostCalc{}, partitioning: []int{}}
@@ -102,9 +102,9 @@ func TestJoinPart1is0(t *testing.T) {
 		getTripleJoinCosts := func(i, j int) *[]float64 {
 			return ((*costs[i]).twoPartitionsCosts[j]).tripleJoinCosts
 		}
-		assert.Nil(t, getTripleJoinCosts(0, 0), "0 has 2 elements, so no tripple join costs")
-		assert.Nil(t, getTripleJoinCosts(0, 2), "0 has 2 elements, so no tripple join costs")
-		assert.Nil(t, getTripleJoinCosts(0, 7), "0 has 2 elements, so no tripple join costs")
+		assert.Nil(t, getTripleJoinCosts(0, 0), "0 has 2 elements, so no triple join costs")
+		assert.Nil(t, getTripleJoinCosts(0, 2), "0 has 2 elements, so no triple join costs")
+		assert.Nil(t, getTripleJoinCosts(0, 7), "0 has 2 elements, so no triple join costs")
 		assert.Equal(t, len(dataPoints)-4, len(*getTripleJoinCosts(1, 0)), "The list of triple join costs for 2 and 3")
 		assert.Equal(t, len(dataPoints)-6, len(*getTripleJoinCosts(1, 2)), "The list of triple join costs for 2 and 5")
 		assert.Equal(t, len(dataPoints)-6, len(*getTripleJoinCosts(3, 0)), "Element 4 should be same as 5 in previous step")
@@ -141,7 +141,7 @@ func TestJoinPart1is0(t *testing.T) {
 }
 
 func TestPartsInMiddle(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	algorithm := GetAlgorithm[string](&dataPoints, &CharCostCalc{})
 	algorithm.InitializeAlgorithm()

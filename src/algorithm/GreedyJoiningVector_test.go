@@ -43,7 +43,7 @@ func init() {
 	vectorAlgorithm = GetAlgorithm[g.Vector](&testData, &calc)
 }
 
-func TestLenghtFirstDimVectors(t *testing.T) {
+func TestLengthFirstDimVectors(t *testing.T) {
 	nextJoin, cost := vectorAlgorithm.InitializeAlgorithm()
 	iteration := 0
 

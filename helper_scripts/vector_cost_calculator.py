@@ -1,6 +1,6 @@
 '''
-This utility offers the posibility to calculate costs for datapoints. The datapoints are 3D vectors.
-The x-,y- and z-coordinates have to be input comma-seperated. Multiple points are also just seperated.
+This utility offers the possibility to calculate costs for data points. The data points are 3D vectors.
+The x-,y- and z-coordinates have to be input comma-separated. Multiple points are also just separated.
 
 Example: x1,y1,z1,x2,y2,z2,x3,y3,z3
 
@@ -10,11 +10,11 @@ import numpy as np
 import argparse
 
 def getPoints():
-  return input('Input the data points (seperated by comma) for which the costs should be calculated \
+  return input('Input the data points (separated by comma) for which the costs should be calculated \
     or type "exit" to exit the utility: ')
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Utility for calculating costs between datapoints, type "exit" to exit this utility')
+  parser = argparse.ArgumentParser(description='Utility for calculating costs between data points, type "exit" to exit this utility')
   parser.add_argument('-t', '--threshold', type=float, default=1, help='The threshold for the cost calculation')
   parser.add_argument('-a', '--amplification', type=float, default=1, help='The amplification for the cost calculation')
   args = parser.parse_args()
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     size = len(points)
     if size / 3 != int(size / 3):
-      print('You did not input the points corretly, each point must have three number representing X, Y and Z coordinate')
+      print('You did not input the points correctly, each point must have three number representing X, Y and Z coordinate')
       user_input = getPoints()
       continue
 

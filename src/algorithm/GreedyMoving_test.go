@@ -10,7 +10,7 @@ import (
 var movingAlgorithm GreedyMovingAlgorithm[string]
 
 func init() {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	movingAlgorithm = GreedyMovingAlgorithm[string]{input: &dataPoints, calc: &CharCostCalc{}}
 	movingAlgorithm.Initialize()
@@ -69,7 +69,7 @@ func TestPartitioningDataStruct(t *testing.T) {
 }
 
 func TestInitializeCost(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 	n := len(dataPoints)
 
 	algorithm := GreedyMovingAlgorithm[string]{input: &dataPoints, calc: &CharCostCalc{}}
@@ -159,7 +159,7 @@ func TestInitialCosts(t *testing.T) {
 }
 
 func TestMove(t *testing.T) {
-	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charly", "big", "delta", "brother", "humor"}
+	dataPoints := []string{"b", "c", "hello", "but", "howdy", "charley", "big", "delta", "brother", "humor"}
 
 	algorithm := GreedyMovingAlgorithm[string]{input: &dataPoints, calc: &CharCostCalc{}}
 	nextMove, _ := algorithm.Initialize()
