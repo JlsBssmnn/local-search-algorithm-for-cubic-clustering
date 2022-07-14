@@ -45,15 +45,8 @@ go run ./src/cmd/runFixedEvaluation/main.go -algorithm GreedyJoining -output ./t
 In the `/helper_scripts` directory are python scripts for parsing and visualizing output from the actual application. See the documentation in these files for further use.
 
 ### Benchmarks
-Benchmarks for the algorithms for the case of points sampled from planes can be found in the file `src/partitioning3D/evaluation/AlgorithmBenchmarks_test.go`. An algorithm can be benchmarked either with or without noise. The data for the partitioning will be created automatically and the number of data points depends on the `testTable` which is located in the same file.
-
-To run a benchmark with `benchmarkName` use the following command (without the braces):
-```sh
-go test ./src/partitioning3D/evaluation -run=^$ -bench=^{benchmarkName}$ -v
-```
-
-### Evaluation of Algorithms
-The algorithms can also be evaluated according to their accuracy. This can be done via the file `src/partitioning3D/evaluation/Algorithm_evaluation_test.go`. You can define the following parameters for the test via command-line arguments:
+Benchmarks for the algorithms for the case of points sampled from planes can be found in the file `src/partitioning3D/evaluation/AlgorithmBenchmarks_test.go`. The data for the partitioning will be created automatically. The following parameters can be specified via command-line arguments:
+- `algorithm1`: The algorithm that should be benchmarked
 - `threshold`: The threshold for the cost calculation
 - `amplification`: The amplification for the cost calculation
 - `mean`: The mean for the noise
@@ -61,9 +54,17 @@ The algorithms can also be evaluated according to their accuracy. This can be do
 - `numberOfPlanes`: How many planes should be used to sample data points
 - `pointsPerPlane`: How many points per plane should be sampled
 
-Again, these tests can be done with or without noise, depending on which function is tested. To evaluate an algorithm with the function `evalFunction` that uses a threshold of 0.5 and samples 10 points from 7 different planes respectively use the following command:
+To run a benchmark for the Greedy Joining algorithm use the following command:
 ```sh
-go test ./src/partitioning3D/evaluation -run=^{evalFunction}$ -v -threshold 0.5 -numberOfPlanes 7 -pointsPerPlane 10
+go test ./src/partitioning3D/evaluation -run=^$ -bench=^BenchmarkAlgorithm$ -v -algorithm1 GreedyJoining
+```
+
+### Evaluation of Algorithms
+The algorithms can also be evaluated according to their accuracy. This can be done via the file `src/partitioning3D/evaluation/Algorithm_evaluation_test.go`. You can specify the same arguments as for the benchmarks.
+
+To evaluate Greedy Joining you could use:
+```sh
+go test ./src/partitioning3D/evaluation -run=^TestEvalAlgorithm$ -v -algorithm1 GreedyJoining -threshold 0.5 -numberOfPlanes 7 -pointsPerPlane 10
 ```
 
 ### Compare Algorithms

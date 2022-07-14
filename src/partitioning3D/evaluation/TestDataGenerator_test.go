@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
@@ -97,16 +96,6 @@ func TestDataFromPlanes(t *testing.T) {
 		assert.Equal(t, 0.0, point.Z)
 		assert.True(t, point.X != math.NaN() && point.X != math.Inf(1) && point.X != math.Inf(-1))
 		assert.True(t, point.Y != math.NaN() && point.Y != math.Inf(1) && point.Y != math.Inf(-1))
-	}
-}
-
-func BenchmarkDataCreation(b *testing.B) {
-	for _, v := range testTable {
-		b.Run(fmt.Sprintf("numOfPlanes: %d, pointsPerPlane: %d", v.numOfPlanes, v.pointsPerPlane), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				GenerateDataWithNoise(v.numOfPlanes, v.pointsPerPlane, utils.NormalDist{Mean: 0, Stddev: 0})
-			}
-		})
 	}
 }
 
