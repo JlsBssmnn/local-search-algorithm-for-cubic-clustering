@@ -32,7 +32,7 @@ func CreateRandomUnitVec() Vector {
 func SamplePointFromPlane(planeNormalVector Vector) Vector {
 	point := CreateRandomVec()
 	dist := (planeNormalVector.X*point.X + planeNormalVector.Y*point.Y + planeNormalVector.Z*point.Z) / planeNormalVector.GetLength()
-	planeNormalVector.ScalarMultiplication(-dist)
+	planeNormalVector.ScalarMultiplication(-dist / planeNormalVector.GetLength())
 
 	point.AddVector(planeNormalVector)
 
