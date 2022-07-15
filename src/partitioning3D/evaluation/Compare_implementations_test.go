@@ -23,8 +23,9 @@ func init() {
 		the parameters will be according to the command-line arguments`)
 	algorithm1 = flag.String("algorithm1", "", "The first algorithm in the equality test")
 	algorithm2 = flag.String("algorithm2", "", "The second algorithm in the equality test")
-	verbose = flag.Int("verbose", 1, `Controls how much output is generated: 0 - no output, 1 - success for each iteration
-		2 - if partitions are not equal print the elements that are partitioned differently`)
+	verbose = flag.Int("verbose", 1, `Controls how much output is generated, higher levels include lower ones:
+		0 - no output, 1 - print if an iteration was not successful, 2 - print if an iteration was successful
+		3 - if partitions are not equal print the elements that are partitioned differently`)
 }
 
 func TestCompareAlgorithms(t *testing.T) {
@@ -50,8 +51,11 @@ func TestCompareAlgorithms(t *testing.T) {
 
 		success := testForEquality(t, firstAlgorithm, secondAlgorithm)
 		if !success {
-			t.Errorf("Partitions were not equal at iteration %d", i)
-		} else {
+			t.Fail()
+			if *verbose >= 1 {
+				t.Errorf("Partitions were not equal at iteration %d", i)
+			}
+		} else if *verbose >= 2 {
 			t.Log("Partitions were equal!")
 		}
 	}
@@ -82,7 +86,7 @@ func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm algorithm.Par
 			_, ok := partMapping2[part2]
 			if ok {
 				success = false
-				if *verbose >= 2 {
+				if *verbose >= 3 {
 					t.Logf("Element %d is differently partitioned", i)
 				}
 			} else {
@@ -93,12 +97,12 @@ func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm algorithm.Par
 			correspondingPart1, ok := partMapping2[part2]
 			if !ok {
 				success = false
-				if *verbose >= 2 {
+				if *verbose >= 3 {
 					t.Logf("Element %d is differently partitioned", i)
 				}
 			} else if correspondingPart1 != part1 || correspondingPart2 != part2 {
 				success = false
-				if *verbose >= 2 {
+				if *verbose >= 3 {
 					t.Logf("Element %d is differently partitioned", i)
 				}
 			}
