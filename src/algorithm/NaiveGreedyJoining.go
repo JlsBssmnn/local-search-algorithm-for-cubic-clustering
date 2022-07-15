@@ -37,9 +37,9 @@ func NaiveGreedyJoining[data any](input *[]data, calc CostCalculator[data]) Part
 	return algorithm.partitioning
 }
 
-func (algorithm *NaiveGreedyJoiningAlgorithm[data]) FindBestJoin() (join [2]int, costDiff float64) {
-	join = [2]int{-1, -1}
-	costDiff = math.Inf(1)
+func (algorithm *NaiveGreedyJoiningAlgorithm[data]) FindBestJoin() (bestJoin [2]int, minCostDiff float64) {
+	bestJoin = [2]int{-1, -1}
+	minCostDiff = math.Inf(1)
 	n := len(algorithm.partitionList)
 
 	for i, partition1 := range algorithm.partitionList {
@@ -50,29 +50,29 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) FindBestJoin() (join [2]int,
 			if len(algorithm.partitions[partition1]) == 1 && len(algorithm.partitions[partition2]) == 1 {
 				for k := j + 1; k < n; k++ {
 					partition3 := algorithm.partitionList[k]
-					currentDiff = algorithm.computeCostDiff3Part(partition1, partition2, partition3)
-					if currentDiff < costDiff {
-						costDiff = currentDiff
-						join[0] = partition1
-						join[1] = partition2
+					currentDiff = algorithm.costDiff2Joins(partition1, partition2, partition3)
+					if currentDiff < minCostDiff {
+						minCostDiff = currentDiff
+						bestJoin[0] = partition1
+						bestJoin[1] = partition2
 					}
 				}
 			} else {
-				currentDiff = algorithm.computeCostDiff(partition1, partition2)
-				if currentDiff < costDiff {
-					costDiff = currentDiff
-					join[0] = partition1
-					join[1] = partition2
+				currentDiff = algorithm.costDiff1Join(partition1, partition2)
+				if currentDiff < minCostDiff {
+					minCostDiff = currentDiff
+					bestJoin[0] = partition1
+					bestJoin[1] = partition2
 				}
 			}
 		}
 	}
 
-	return join, costDiff
+	return bestJoin, minCostDiff
 }
 
 // Computes the difference in cost when joining the 2 given partitions
-func (algorithm *NaiveGreedyJoiningAlgorithm[data]) computeCostDiff(part1Idx, part2Idx int) (costDiff float64) {
+func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff1Join(part1Idx, part2Idx int) (costDiff float64) {
 	part1 := algorithm.partitions[part1Idx]
 	part2 := algorithm.partitions[part2Idx]
 	n1 := len(part1)
@@ -101,7 +101,7 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) computeCostDiff(part1Idx, pa
 
 // Computes the difference in cost when joining the two singleton partitions (first 2 parameters)
 // with the third one (third parameter)
-func (algorithm *NaiveGreedyJoiningAlgorithm[data]) computeCostDiff3Part(part1Idx, part2Idx, part3Idx int) (costDiff float64) {
+func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff2Joins(part1Idx, part2Idx, part3Idx int) (costDiff float64) {
 	if len(algorithm.partitions[part1Idx]) != 1 || len(algorithm.partitions[part1Idx]) != 1 {
 		panic("One of the first 2 partitions was not a singleton set")
 	}

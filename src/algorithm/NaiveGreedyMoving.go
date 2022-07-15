@@ -18,23 +18,23 @@ func NaiveGreedyMoving[data any](input *[]data, calc CostCalculator[data]) Parti
 	algorithm := NaiveGreedyMovingAlgorithm[data]{input: input, calc: calc}
 	algorithm.initialize()
 
-	nextMove, cost := algorithm.findBestMove()
+	nextMove, costDiff := algorithm.findBestMove()
 	U, a, b := nextMove[0], nextMove[1], nextMove[2]
 
-	for cost < 0 && U != -1 && a != -1 {
+	for costDiff < 0 {
 		algorithm.moveElement(U, a)
 		if b != -1 {
 			algorithm.moveElement(U, b)
 		}
-		nextMove, cost = algorithm.findBestMove()
+		nextMove, costDiff = algorithm.findBestMove()
 		U, a, b = nextMove[0], nextMove[1], nextMove[2]
 	}
 	return algorithm.partitioning
 }
 
-func (algorithm *NaiveGreedyMovingAlgorithm[data]) findBestMove() ([3]int, float64) {
+func (algorithm *NaiveGreedyMovingAlgorithm[data]) findBestMove() (bestMove [3]int, minCostDiff float64) {
 	// find the best move of element a (and potentially b) to a set U
-	minCostDif := math.Inf(1)
+	minCostDiff = math.Inf(1)
 	a := -1
 	b := -1
 	U := -1
@@ -55,18 +55,18 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) findBestMove() ([3]int, float
 					if algorithm.partitioning[k] == j {
 						continue
 					}
-					moveCost := algorithm.costDiff2Moves(j, i, k)
-					if moveCost < minCostDif {
-						minCostDif = moveCost
+					currentDiff := algorithm.costDiff2Moves(j, i, k)
+					if currentDiff < minCostDiff {
+						minCostDiff = currentDiff
 						a = i
 						b = k
 						U = j
 					}
 				}
 			} else {
-				moveCost := algorithm.costDiff1Move(j, i)
-				if moveCost < minCostDif {
-					minCostDif = moveCost
+				currentDiff := algorithm.costDiff1Move(j, i)
+				if currentDiff < minCostDiff {
+					minCostDiff = currentDiff
 					a = i
 					b = -1
 					U = j
@@ -76,9 +76,9 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) findBestMove() ([3]int, float
 		// if the partition of i contains more than 1 element we consider the case
 		// where we remove i from it's partition
 		if len(*algorithm.partitions[algorithm.partitioning[i]]) > 1 {
-			moveCost := algorithm.costDiffRemoveElement(i)
-			if moveCost < minCostDif {
-				minCostDif = moveCost
+			currentDiff := algorithm.costDiffRemoveElement(i)
+			if currentDiff < minCostDiff {
+				minCostDiff = currentDiff
 				a = i
 				b = -1
 				U = -1
@@ -95,7 +95,9 @@ func (algorithm *NaiveGreedyMovingAlgorithm[data]) findBestMove() ([3]int, float
 		}
 		U = maxPart + 1
 	}
-	return [3]int{U, a, b}, minCostDif
+
+	bestMove = [3]int{U, a, b}
+	return bestMove, minCostDiff
 }
 
 // Initializes the partitioning array and the partitions map

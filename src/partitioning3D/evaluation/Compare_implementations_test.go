@@ -65,6 +65,11 @@ func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm algorithm.Par
 	partAlg1 := firstAlgorithm(&testData.points, calc)
 	partAlg2 := secondAlgorithm(&testData.points, calc)
 
+	if len(partAlg1) != len(partAlg2) {
+		t.Logf("Partitioning arrays have different lengths")
+		return false
+	}
+
 	partMapping1 := make(map[int]int)
 	partMapping2 := make(map[int]int)
 

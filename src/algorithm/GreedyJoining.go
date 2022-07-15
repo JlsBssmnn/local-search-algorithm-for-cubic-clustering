@@ -479,12 +479,11 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep4(part1, part2 int, previ
 // 	- it only joins 2 partitions
 // 	- if there is only one partition left the algorithm terminates
 func GreedyJoining[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
-	// algorithm := Algorithm[data]{input: input, calc: calc}
-	algorithm := GetAlgorithm(input, calc)
-	nextJoin, cost := algorithm.InitializeAlgorithm()
+	algorithm := GreedyJoiningAlgorithm[data]{input: input, calc: calc}
+	nextJoin, costDiff := algorithm.InitializeAlgorithm()
 
-	for cost < 0 && nextJoin[0] != -1 && nextJoin[1] != -1 {
-		nextJoin, cost = algorithm.Join(nextJoin[0], nextJoin[1])
+	for costDiff < 0 && nextJoin[0] != -1 && nextJoin[1] != -1 {
+		nextJoin, costDiff = algorithm.Join(nextJoin[0], nextJoin[1])
 	}
 	return algorithm.partitioning
 }

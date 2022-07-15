@@ -692,27 +692,15 @@ func (algorithm *GreedyMovingAlgorithm[data]) Initialize() ([3]int, float64) {
 // 	- if there is only one partition left the algorithm terminates
 func GreedyMoving[data any](input *[]data, calc CostCalculator[data]) PartitioningArray {
 	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc}
-	nextMove, cost := algorithm.Initialize()
-	lastMoves := [10]struct {
-		move [3]int
-		cost float64
-	}{}
-	index := 0
-	i := 0
+	nextMove, costDiff := algorithm.Initialize()
 
-	for cost < 0 && nextMove[1] != -1 {
-		i++
-		lastMoves[index].move = nextMove
-		lastMoves[index].cost = cost
-		index = (index + 1) % 10
-		detectCycle(lastMoves, i)
-
-		newNextMove, newCost := algorithm.Move(nextMove[0], nextMove[1])
+	for costDiff < 0 && nextMove[1] != -1 {
+		newNextMove, newCostDiff := algorithm.Move(nextMove[0], nextMove[1])
 		if nextMove[2] != -1 {
-			nextMove, cost = algorithm.Move(nextMove[0], nextMove[2])
+			nextMove, costDiff = algorithm.Move(nextMove[0], nextMove[2])
 		} else {
 			nextMove = newNextMove
-			cost = newCost
+			costDiff = newCostDiff
 		}
 	}
 	return algorithm.partitioning
@@ -724,42 +712,22 @@ func GreedyMovingWithConstraints[data any](input *[]data, calc CostCalculator[da
 	constraints, precomputedPartitions := translateConstraints(parseConstraints(path), len(*input))
 	algorithm := GreedyMovingAlgorithm[data]{input: input, calc: calc, constraints: &constraints}
 
-	nextMove, cost := algorithm.Initialize()
+	nextMove, costDiff := algorithm.Initialize()
 	for key, list := range precomputedPartitions {
 		iter := list.Iterator()
 		for iter.HasNext() {
-			nextMove, cost = algorithm.Move(key, iter.Next())
+			nextMove, costDiff = algorithm.Move(key, iter.Next())
 		}
 	}
 
-	for cost < 0 && nextMove[1] != -1 {
-		newNextMove, newCost := algorithm.Move(nextMove[0], nextMove[1])
+	for costDiff < 0 && nextMove[1] != -1 {
+		newNextMove, newCostDiff := algorithm.Move(nextMove[0], nextMove[1])
 		if nextMove[2] != -1 {
-			nextMove, cost = algorithm.Move(nextMove[0], nextMove[2])
+			nextMove, costDiff = algorithm.Move(nextMove[0], nextMove[2])
 		} else {
 			nextMove = newNextMove
-			cost = newCost
+			costDiff = newCostDiff
 		}
 	}
 	return algorithm.partitioning
-}
-
-func detectCycle(lastMoves [10]struct {
-	move [3]int
-	cost float64
-}, iteration int) {
-
-	for i, action := range lastMoves {
-		if action.move == [3]int{0, 0, 0} && action.cost == 0.0 {
-			continue
-		}
-		for j := i + 1; j < len(lastMoves); j++ {
-			oAction := lastMoves[j]
-			if oAction.move == [3]int{0, 0, 0} && oAction.cost == 0.0 {
-				continue
-			} else if action.move == oAction.move && action.cost == oAction.cost {
-				panic(fmt.Sprintf("Cycle detected at algorithm iteration %d", iteration))
-			}
-		}
-	}
 }
