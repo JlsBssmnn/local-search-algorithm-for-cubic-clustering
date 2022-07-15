@@ -108,8 +108,19 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff2Joins(part1Idx, par
 	elem1 := algorithm.partitions[part1Idx][0]
 	elem2 := algorithm.partitions[part2Idx][0]
 
-	for _, elem3 := range algorithm.partitions[part3Idx] {
+	part3 := algorithm.partitions[part3Idx]
+
+	// tuples where the first 2 elements are elem1 and elem2 and the third element is in part3
+	for _, elem3 := range part3 {
 		costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem1], (*algorithm.input)[elem2], (*algorithm.input)[elem3])
+	}
+
+	// tuples where first element is elem1 or elem2 and others are in part3
+	for i := 0; i < len(part3)-1; i++ {
+		for j := i + 1; j < len(part3); j++ {
+			costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem1], (*algorithm.input)[part3[i]], (*algorithm.input)[part3[j]])
+			costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem2], (*algorithm.input)[part3[i]], (*algorithm.input)[part3[j]])
+		}
 	}
 
 	return costDiff
@@ -132,7 +143,5 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) join(part1, part2 int) {
 
 	// update partitionList
 	i := utils.Find(algorithm.partitionList, part2)
-	n := len(algorithm.partitionList)
-	algorithm.partitionList[i] = algorithm.partitionList[n-1]
-	algorithm.partitionList = algorithm.partitionList[:n-1]
+	algorithm.partitionList = append(algorithm.partitionList[:i], algorithm.partitionList[i+1:]...)
 }

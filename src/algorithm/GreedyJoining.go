@@ -317,12 +317,12 @@ func (algorithm *GreedyJoiningAlgorithm[data]) joinStep1(part1, part2 int, previ
 				// Access cache
 				costI, ok := cache[i]
 				if !ok {
-					costI = algorithm.costs.RealJoinCost(i, part1) + algorithm.costs.RealJoinCost(i, part2) + algorithm.TripleCost3Part(i, part1, part2)
+					costI = algorithm.TripleCost3Part(i, part1, part2)
 					cache[i] = costI
 				}
 				costJ, ok := cache[secondElement]
 				if !ok {
-					costJ = algorithm.costs.RealJoinCost(secondElement, part1) + algorithm.costs.RealJoinCost(secondElement, part2) + algorithm.TripleCost3Part(secondElement, part1, part2)
+					costJ = algorithm.TripleCost3Part(secondElement, part1, part2)
 					cache[secondElement] = costJ
 				}
 
