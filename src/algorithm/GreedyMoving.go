@@ -1,7 +1,6 @@
 package algorithm
 
 import (
-	"fmt"
 	"math"
 	"sync"
 
@@ -628,28 +627,26 @@ func (algorithm *GreedyMovingAlgorithm[data]) secondStage(i int) {
 			continue
 		}
 
-		// recompute all double moves
 		invalid := oem.bestMove < 0
-		minCostDoubleMove := math.Inf(1)
-		bestMoveDoubleMove := -1
-		for k := 0; k < len(*oem.doubleMoves); k++ {
-			kElement := getDoubleMoveElement(i, j, k)
-			(*oem.doubleMoves)[k].cost = algorithm.tripleCosts.GetTripleCost(i, j, kElement) + algorithm.getRemoveCost(i) + algorithm.getRemoveCost(kElement)
+		if !invalid {
+			// recompute all double moves
+			minCostDoubleMove := math.Inf(1)
+			bestMoveDoubleMove := -1
+			for k := 0; k < len(*oem.doubleMoves); k++ {
+				kElement := getDoubleMoveElement(i, j, k)
+				(*oem.doubleMoves)[k].cost = algorithm.tripleCosts.GetTripleCost(i, j, kElement) + algorithm.getRemoveCost(i) + algorithm.getRemoveCost(kElement)
 
-			// if i and k are in the same partition, some costs were considered twice
-			// so they have to be substracted again
-			if utils.Contains(*algorithm.partitions[i], kElement) {
-				(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
+				// if i and k are in the same partition, some costs were considered twice
+				// so they have to be subtracted again
+				if utils.Contains(*algorithm.partitions[i], kElement) {
+					(*oem.doubleMoves)[k].cost += algorithm.tripleCostSum(i, kElement, i)
+				}
+				if (*oem.doubleMoves)[k].valid && (*oem.doubleMoves)[k].cost < minCostDoubleMove {
+					minCostDoubleMove = (*oem.doubleMoves)[k].cost
+					bestMoveDoubleMove = k
+				}
 			}
-			if (*oem.doubleMoves)[k].valid && (*oem.doubleMoves)[k].cost < minCostDoubleMove {
-				minCostDoubleMove = (*oem.doubleMoves)[k].cost
-				bestMoveDoubleMove = k
-			}
-		}
 
-		if invalid {
-			oem.bestMove = -(getDoubleMoveElement(i, j, bestMoveDoubleMove) + 1)
-		} else {
 			oem.bestMove = getDoubleMoveElement(i, j, bestMoveDoubleMove)
 			oem.cost = minCostDoubleMove
 		}
