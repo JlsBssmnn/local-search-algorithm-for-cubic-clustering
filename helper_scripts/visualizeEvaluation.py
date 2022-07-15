@@ -128,7 +128,7 @@ def visualizeTime(*files: str):
   ax.set_ylabel('Execution Time in s')
   ax.legend(loc='best', fontsize=15)
 
-  plt.suptitle('Execution Time Comparison', fontsize=20)
+  plt.title('Execution Time Comparison', fontsize=20)
 
   plt.show()
 
@@ -145,9 +145,9 @@ def visualizeAverages(*files: str):
     jsonData.append(json.load(f))
     f.close()
 
-    accArray = np.empty(len(jsonData[-1]['AccuracyResults']))
+    accArray = np.empty((len(jsonData[-1]['AccuracyResults']), len(jsonData[-1]['AccuracyResults'][0]['Accuracies'])))
     for i, ar in enumerate(jsonData[-1]['AccuracyResults']):
-      accArray[i] = np.mean(ar['Accuracies'])
+      accArray[i] = ar['Accuracies']
     times.append(accArray)
 
   fig, ax = plt.subplots()
@@ -155,13 +155,18 @@ def visualizeAverages(*files: str):
   for i, accArray in enumerate(times):
     title = jsonData[i]['Algorithm'] + ': '
     title += f'Datapoints: {jsonData[i]["PointsPerPlane"]*3}, Iterations: {jsonData[i]["Iterations"]}'
-    ax.plot(jsonData[i]['StddevValues'], accArray, label=title)
+
+    stddevValues = jsonData[i]['StddevValues']
+    means = np.mean(accArray, axis=1)
+    stddev = np.std(accArray, axis=1)
+    ax.plot(stddevValues, means, label=title)
+    ax.fill_between(stddevValues, means + stddev, means - stddev, alpha=0.3)
 
   ax.set_xlabel('stddev')
   ax.set_ylabel('Average accuracy')
   ax.legend(loc='upper right', fontsize=15)
 
-  plt.suptitle('Accuracy Comparison', fontsize=20)
+  plt.title('Accuracy Comparison', fontsize=20)
 
   plt.show()
 
