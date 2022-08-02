@@ -12,6 +12,8 @@ import (
 type Evaluation struct {
 	NumOfPlanesError float64
 	Accuracy         float64
+	FalsePositives   float64
+	FalseNegatives   float64
 }
 
 // Evaluate an algorithm by specifying the algorithm as string (the function name of the algorithm)
@@ -31,6 +33,8 @@ func EvaluateAlgorithm(algorithm alg.PartitioningAlgorithm[geometry.Vector], cos
 
 	pointsPerPlane := n / len(testData.planes)
 	correctPartitioned := 0
+	fN := 0
+	fP := 0
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
 			samePartition := i/pointsPerPlane == j/pointsPerPlane
@@ -38,10 +42,17 @@ func EvaluateAlgorithm(algorithm alg.PartitioningAlgorithm[geometry.Vector], cos
 				correctPartitioned++
 			} else if !samePartition && part[i] != part[j] {
 				correctPartitioned++
+			} else if samePartition {
+				fP++
+			} else {
+				fN++
 			}
 		}
 	}
-	accuracy := float64(correctPartitioned) / (float64(n*(n-1)) / 2.0)
+	totalEdges := (float64(n*(n-1)) / 2.0)
+	accuracy := float64(correctPartitioned) / totalEdges
+	falsePositives := float64(fP) / (totalEdges - float64(correctPartitioned))
+	falseNegatives := float64(fN) / (totalEdges - float64(correctPartitioned))
 
-	return Evaluation{NumOfPlanesError: numOfPlanesError, Accuracy: accuracy}
+	return Evaluation{NumOfPlanesError: numOfPlanesError, Accuracy: accuracy, FalsePositives: falsePositives, FalseNegatives: falseNegatives}
 }

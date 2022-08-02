@@ -34,5 +34,6 @@ func TestEvalAlgorithm(t *testing.T) {
 	eval := EvaluateAlgorithm(algorithm, partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}, &testData)
 
 	fmt.Printf("%s on %d planes with %d points per plane gave the following results:\n", *algorithm1, *numOfPlanes, *pointsPerPlane)
-	fmt.Printf("\tnumber of planes error: %f%%\n\taccuracy: %f%%\n", eval.NumOfPlanesError*100, eval.Accuracy*100)
+	fmt.Printf("\tnumber of planes error: %f%%\n\taccuracy: %f%%\n\tfalse positives: %f%%\n\tfalse negatives: %f%%\n",
+		eval.NumOfPlanesError*100, eval.Accuracy*100, eval.FalsePositives*100, eval.FalseNegatives*100)
 }
