@@ -26,9 +26,9 @@ type VectorCostCalculator struct {
 	Amplification float64
 }
 
-func (calc VectorCostCalculator) TripleCost(v1, v2, v3 g.Vector) float64 {
-	v1.AddVector(v2)
-	v1.AddVector(v3)
+func (calc VectorCostCalculator) TripleCost(v1, v2, v3 *g.Vector) float64 {
+	v1.AddVector(*v2)
+	v1.AddVector(*v3)
 	return v1.X
 }
 

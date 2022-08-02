@@ -408,7 +408,7 @@ func (algorithm *GreedyMovingAlgorithm[data]) InitializeTripleCosts() {
 			thirdDim := make([]float64, n-j-1)
 
 			for k := j + 1; k < n; k++ {
-				thirdDim[k-j-1] = algorithm.calc.TripleCost((*algorithm.input)[i], (*algorithm.input)[j], (*algorithm.input)[k])
+				thirdDim[k-j-1] = algorithm.calc.TripleCost(&(*algorithm.input)[i], &(*algorithm.input)[j], &(*algorithm.input)[k])
 			}
 			secondDim[j-i-1] = thirdDim
 		}

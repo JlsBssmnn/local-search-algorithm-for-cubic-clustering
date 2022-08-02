@@ -37,13 +37,13 @@ func TestSamplePointFromPlaneWithNoise(t *testing.T) {
 	point := SamplePointFromPlaneWithNoise(plane, noise)
 
 	// an element is within 3 stddev with 99.7% probability
-	assert.Less(t, DistFromPlane(plane, point), 3.0, "This test should fail with probability of 0.3%")
+	assert.Less(t, DistFromPlane(&plane, &point), 3.0, "This test should fail with probability of 0.3%")
 
 	// that an element is within 1 stddev in at least 1 of 10 iterations is ~0.001%
 	inOneStddev := false
 	for i := 0; i < 10; i++ {
 		point = SamplePointFromPlaneWithNoise(plane, noise)
-		inOneStddev = inOneStddev || DistFromPlane(plane, point) <= 1
+		inOneStddev = inOneStddev || DistFromPlane(&plane, &point) <= 1
 	}
 	assert.True(t, inOneStddev, "This test should fail with probability of 0.001%")
 
@@ -51,7 +51,7 @@ func TestSamplePointFromPlaneWithNoise(t *testing.T) {
 	outside2Stddev := false
 	for i := 0; i < 200; i++ {
 		point = SamplePointFromPlaneWithNoise(plane, noise)
-		outside2Stddev = outside2Stddev || DistFromPlane(plane, point) >= 2
+		outside2Stddev = outside2Stddev || DistFromPlane(&plane, &point) >= 2
 	}
 	assert.True(t, outside2Stddev, "This test should fail with probability of 0.0035%")
 }

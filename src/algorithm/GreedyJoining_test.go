@@ -21,8 +21,8 @@ type CharCostCalc struct{}
 
 // if two strings start with the same char -> cost -1
 // otherwise cost 1
-func (calc CharCostCalc) TripleCost(c1, c2, c3 string) float64 {
-	if c1[0:1] == c2[0:1] && c2[0:1] == c3[0:1] {
+func (calc CharCostCalc) TripleCost(c1, c2, c3 *string) float64 {
+	if (*c1)[0:1] == (*c2)[0:1] && (*c2)[0:1] == (*c3)[0:1] {
 		return -1
 	} else {
 		return 1

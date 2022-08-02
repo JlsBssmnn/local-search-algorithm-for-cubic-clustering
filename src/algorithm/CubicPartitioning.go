@@ -10,7 +10,7 @@ import (
 )
 
 type CostCalculator[data any] interface {
-	TripleCost(d1, d2, d3 data) float64
+	TripleCost(d1, d2, d3 *data) float64
 }
 
 // Represents a partitioning of data points. The indices of the array

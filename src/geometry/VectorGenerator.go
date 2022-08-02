@@ -36,7 +36,7 @@ func SamplePointFromPlane(planeNormalVector Vector) Vector {
 
 	point.AddVector(planeNormalVector)
 
-	if DistFromPlane(planeNormalVector, point) > 0.00000001 {
+	if DistFromPlane(&planeNormalVector, &point) > 0.00000001 {
 		panic("The result of SamplePointFromPlane() was a point that is not on the provided plane")
 	}
 	return point

@@ -28,6 +28,6 @@ var distanceData = []struct {
 
 func TestDistFromPlane(t *testing.T) {
 	for _, val := range distanceData {
-		assert.InDelta(t, val.distance, DistFromPlane(val.planeNormalVector, val.pointVector), delta, "Distance should be correct")
+		assert.InDelta(t, val.distance, DistFromPlane(&val.planeNormalVector, &val.pointVector), delta, "Distance should be correct")
 	}
 }

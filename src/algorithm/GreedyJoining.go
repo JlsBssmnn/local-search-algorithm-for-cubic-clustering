@@ -157,9 +157,9 @@ func (algorithm *GreedyJoiningAlgorithm[data]) TripleCost3Part(i, j, k int) floa
 			for kIter.HasNext() {
 				kElement := kIter.Next()
 				cost += algorithm.calc.TripleCost(
-					(*algorithm.input)[iElement],
-					(*algorithm.input)[jElement],
-					(*algorithm.input)[kElement])
+					&(*algorithm.input)[iElement],
+					&(*algorithm.input)[jElement],
+					&(*algorithm.input)[kElement])
 			}
 		}
 	}
@@ -230,7 +230,7 @@ func InitializeCosts[data any](input *[]data, calc CostCalculator[data]) (Costs,
 			minCost3Dim := math.Inf(1)
 			bestJoin3Dim := -1
 			for k := 0; k < len(tripleJoinCosts); k++ {
-				tripleCost := calc.TripleCost((*input)[i], (*input)[i+j+1], (*input)[i+j+k+2])
+				tripleCost := calc.TripleCost(&(*input)[i], &(*input)[i+j+1], &(*input)[i+j+k+2])
 				if tripleCost < minCost3Dim {
 					minCost3Dim = tripleCost
 					bestJoin3Dim = k

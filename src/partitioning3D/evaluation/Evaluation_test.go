@@ -10,7 +10,7 @@ import (
 
 type ZeroCostCalc struct{}
 
-func (calc ZeroCostCalc) TripleCost(v1, v2, v3 geometry.Vector) float64 {
+func (calc ZeroCostCalc) TripleCost(v1, v2, v3 *geometry.Vector) float64 {
 	return 0.0
 }
 

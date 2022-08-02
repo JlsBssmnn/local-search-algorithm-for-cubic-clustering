@@ -29,7 +29,7 @@ var data = []struct {
 
 func TestGetMaxDist(t *testing.T) {
 	for _, element := range data {
-		assert.InDelta(t, element.maxDist, GetMaxDist(element.plane, element.v1, element.v2, element.v3), delta, "MaxDist should be calculated correctly")
+		assert.InDelta(t, element.maxDist, GetMaxDist(&element.plane, &element.v1, &element.v2, &element.v3), delta, "MaxDist should be calculated correctly")
 	}
 }
 
@@ -37,22 +37,22 @@ func TestTripleCost(t *testing.T) {
 	calc := CostCalculator{Threshold: 2, Amplification: 4}
 
 	assert.InDelta(t, -8,
-		calc.TripleCost(g.Vector{X: -35.5, Y: 0, Z: -71}, g.Vector{X: 0, Y: 0, Z: 0}, g.Vector{X: 9, Y: 192.51, Z: 18}),
+		calc.TripleCost(&g.Vector{X: -35.5, Y: 0, Z: -71}, &g.Vector{X: 0, Y: 0, Z: 0}, &g.Vector{X: 9, Y: 192.51, Z: 18}),
 		delta,
 		"The points are all in the fitted plane",
 	)
 	assert.InDelta(t, -8,
-		calc.TripleCost(g.Vector{X: 0, Y: 0, Z: 1}, g.Vector{X: 0, Y: 0, Z: 0}, g.Vector{X: 0, Y: 0, Z: 0}),
+		calc.TripleCost(&g.Vector{X: 0, Y: 0, Z: 1}, &g.Vector{X: 0, Y: 0, Z: 0}, &g.Vector{X: 0, Y: 0, Z: 0}),
 		delta,
 		"The points are all in the origin",
 	)
 	assert.InDelta(t, -8,
-		calc.TripleCost(g.Vector{X: 8, Y: 8, Z: 8}, g.Vector{X: -4.2, Y: -4.2, Z: -4.2}, g.Vector{X: 109.52, Y: 109.52, Z: 109.52}),
+		calc.TripleCost(&g.Vector{X: 8, Y: 8, Z: 8}, &g.Vector{X: -4.2, Y: -4.2, Z: -4.2}, &g.Vector{X: 109.52, Y: 109.52, Z: 109.52}),
 		delta,
 		"The points are all in the fitted plane",
 	)
 	assert.InDelta(t, -8.0,
-		calc.TripleCost(g.Vector{X: 5, Y: 5, Z: 5}, g.Vector{X: 6, Y: 6, Z: 3}, g.Vector{X: 4, Y: 4, Z: 7}),
+		calc.TripleCost(&g.Vector{X: 5, Y: 5, Z: 5}, &g.Vector{X: 6, Y: 6, Z: 3}, &g.Vector{X: 4, Y: 4, Z: 7}),
 		delta,
 		"The points are all in the fitted plane",
 	)
@@ -77,7 +77,7 @@ func BenchmarkTripleCost(b *testing.B) {
 				calc := CostCalculator{Threshold: v.threshold, Amplification: v.amplification}
 				v1, v2, v3 := g.CreateRandomVec(), g.CreateRandomVec(), g.CreateRandomVec()
 				b.StartTimer()
-				calc.TripleCost(v1, v2, v3)
+				calc.TripleCost(&v1, &v2, &v3)
 			}
 		})
 	}

@@ -82,7 +82,7 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff1Join(part1Idx, part
 	for i := 0; i < n1-1; i++ {
 		for j := i + 1; j < n1; j++ {
 			for k := 0; k < n2; k++ {
-				costDiff += algorithm.calc.TripleCost((*algorithm.input)[part1[i]], (*algorithm.input)[part1[j]], (*algorithm.input)[part2[k]])
+				costDiff += algorithm.calc.TripleCost(&(*algorithm.input)[part1[i]], &(*algorithm.input)[part1[j]], &(*algorithm.input)[part2[k]])
 			}
 		}
 	}
@@ -91,7 +91,7 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff1Join(part1Idx, part
 	for i := 0; i < n2-1; i++ {
 		for j := i + 1; j < n2; j++ {
 			for k := 0; k < n1; k++ {
-				costDiff += algorithm.calc.TripleCost((*algorithm.input)[part2[i]], (*algorithm.input)[part2[j]], (*algorithm.input)[part1[k]])
+				costDiff += algorithm.calc.TripleCost(&(*algorithm.input)[part2[i]], &(*algorithm.input)[part2[j]], &(*algorithm.input)[part1[k]])
 			}
 		}
 	}
@@ -102,7 +102,7 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff1Join(part1Idx, part
 // Computes the difference in cost when joining the two singleton partitions (first 2 parameters)
 // with the third one (third parameter)
 func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff2Joins(part1Idx, part2Idx, part3Idx int) (costDiff float64) {
-	if len(algorithm.partitions[part1Idx]) != 1 || len(algorithm.partitions[part1Idx]) != 1 {
+	if len(algorithm.partitions[part1Idx]) != 1 || len(algorithm.partitions[part2Idx]) != 1 {
 		panic("One of the first 2 partitions was not a singleton set")
 	}
 	elem1 := algorithm.partitions[part1Idx][0]
@@ -112,14 +112,14 @@ func (algorithm *NaiveGreedyJoiningAlgorithm[data]) costDiff2Joins(part1Idx, par
 
 	// tuples where the first 2 elements are elem1 and elem2 and the third element is in part3
 	for _, elem3 := range part3 {
-		costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem1], (*algorithm.input)[elem2], (*algorithm.input)[elem3])
+		costDiff += algorithm.calc.TripleCost(&(*algorithm.input)[elem1], &(*algorithm.input)[elem2], &(*algorithm.input)[elem3])
 	}
 
 	// tuples where first element is elem1 or elem2 and others are in part3
 	for i := 0; i < len(part3)-1; i++ {
 		for j := i + 1; j < len(part3); j++ {
-			costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem1], (*algorithm.input)[part3[i]], (*algorithm.input)[part3[j]])
-			costDiff += algorithm.calc.TripleCost((*algorithm.input)[elem2], (*algorithm.input)[part3[i]], (*algorithm.input)[part3[j]])
+			costDiff += algorithm.calc.TripleCost(&(*algorithm.input)[elem1], &(*algorithm.input)[part3[i]], &(*algorithm.input)[part3[j]])
+			costDiff += algorithm.calc.TripleCost(&(*algorithm.input)[elem2], &(*algorithm.input)[part3[i]], &(*algorithm.input)[part3[j]])
 		}
 	}
 
