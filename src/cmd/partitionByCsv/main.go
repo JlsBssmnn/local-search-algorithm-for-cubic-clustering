@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/algorithm"
 	"github.com/JlsBssmnn/local-search-algorithm-for-cubic-clustering/src/geometry"
@@ -35,11 +36,15 @@ func main() {
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
 
 	var partitioningArray algorithm.PartitioningArray
+
+	start := time.Now()
 	if *constraintFile != "" && *selectedAlgorithm == "GreedyMoving" {
 		partitioningArray = algorithm.GreedyMovingWithConstraints[geometry.Vector](points, &calc, *constraintFile)
 	} else {
 		partitioningArray = algorithm.AlgorithmStringToFunc[geometry.Vector](*selectedAlgorithm)(points, &calc)
 	}
+	fmt.Printf("Finished partitioning after %dms\n", time.Since(start).Milliseconds())
+	fmt.Println("Partitioning array:", partitioningArray)
 
 	// Order elements by their partition
 	partitioning := make(map[int]*utils.LinkedList[int])
