@@ -31,12 +31,12 @@ func TestGenerateDataWithoutNoise(t *testing.T) {
 	pointsPerPlane := 20
 
 	data := GenerateDataWithoutNoise(nPlanes, pointsPerPlane)
-	assert.Equal(t, nPlanes, data.numOfPlanes, "number of planes should be stored correctly")
-	assert.Equal(t, nPlanes, len(data.planes), "there should be as many planes as specified")
+	assert.Equal(t, nPlanes, data.NumOfPlanes, "number of planes should be stored correctly")
+	assert.Equal(t, nPlanes, len(data.Planes), "there should be as many planes as specified")
 
-	for i, point := range data.points {
+	for i, point := range data.Points {
 		assert.InDelta(t, 0, geometry.DistFromPlane(
-			&data.planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
+			&data.Planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
 			&point),
 			delta,
 			"Every point should be on it's corresponding plane",
@@ -51,9 +51,9 @@ func TestGenerateDataWithNoise(t *testing.T) {
 
 	data := GenerateDataWithNoise(nPlanes, pointsPerPlane, noise)
 
-	for i, point := range data.points {
+	for i, point := range data.Points {
 		assert.LessOrEqual(t, 0.001, geometry.DistFromPlane(
-			&data.planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
+			&data.Planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
 			&point),
 			delta,
 			`It should basically be impossible for a point to be really close to it's
@@ -64,9 +64,9 @@ func TestGenerateDataWithNoise(t *testing.T) {
 	noise = utils.NormalDist{Mean: 0, Stddev: 0}
 	data = GenerateDataWithNoise(nPlanes, pointsPerPlane, noise)
 
-	for i, point := range data.points {
+	for i, point := range data.Points {
 		assert.InDelta(t, 0.0, geometry.DistFromPlane(
-			&data.planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
+			&data.Planes[int(math.Floor(float64(i)/float64(pointsPerPlane)))],
 			&point),
 			delta,
 			`If mu and sigma are 0 in the normal distribution, then every sampled point
@@ -80,19 +80,19 @@ func TestDataFromPlanes(t *testing.T) {
 	testData := GenerateDataFromPlanesWithNoise(planes, 5, utils.NormalDist{Mean: 0, Stddev: 0})
 
 	for i := 0; i < 5; i++ {
-		point := testData.points[i]
+		point := testData.Points[i]
 		assert.Equal(t, 0.0, point.X)
 		assert.True(t, point.Y != math.NaN() && point.Y != math.Inf(1) && point.Y != math.Inf(-1))
 		assert.True(t, point.Z != math.NaN() && point.Z != math.Inf(1) && point.Z != math.Inf(-1))
 	}
 	for i := 5; i < 10; i++ {
-		point := testData.points[i]
+		point := testData.Points[i]
 		assert.Equal(t, 0.0, point.Y)
 		assert.True(t, point.X != math.NaN() && point.X != math.Inf(1) && point.X != math.Inf(-1))
 		assert.True(t, point.Z != math.NaN() && point.Z != math.Inf(1) && point.Z != math.Inf(-1))
 	}
 	for i := 10; i < 15; i++ {
-		point := testData.points[i]
+		point := testData.Points[i]
 		assert.Equal(t, 0.0, point.Z)
 		assert.True(t, point.X != math.NaN() && point.X != math.Inf(1) && point.X != math.Inf(-1))
 		assert.True(t, point.Y != math.NaN() && point.Y != math.Inf(1) && point.Y != math.Inf(-1))
@@ -122,7 +122,7 @@ func TestSaveTestDataToFile(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	for _, point := range testData.points {
+	for _, point := range testData.Points {
 		csvRow := []string{strconv.FormatFloat(point.X, 'f', 15, 64), strconv.FormatFloat(point.Y, 'f', 15, 64), strconv.FormatFloat(point.Z, 'f', 15, 64)}
 		if err := writer.Write(csvRow); err != nil {
 			t.Error(err)

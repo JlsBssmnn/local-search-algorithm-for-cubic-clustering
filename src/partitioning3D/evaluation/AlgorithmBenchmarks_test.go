@@ -25,6 +25,6 @@ func BenchmarkAlgorithm(b *testing.B) {
 		testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, noise)
 		b.StartTimer()
 
-		algorithm(&testData.points, &calc)
+		algorithm(&testData.Points, &calc)
 	}
 }

@@ -16,7 +16,7 @@ func GenerateData(numOfPlanes, pointsPerPlane int, sampling func(g.Vector) g.Vec
 			points = append(points, sampling(plane))
 		}
 	}
-	return TestData{numOfPlanes: numOfPlanes, planes: planes, points: points}
+	return TestData{NumOfPlanes: numOfPlanes, Planes: planes, Points: points}
 }
 
 // Generate test data without noise, thus every point will be on one plane
@@ -42,5 +42,5 @@ func GenerateDataFromPlanesWithNoise(planes []g.Vector, pointsPerPlane int, nois
 			points = append(points, g.SamplePointFromPlaneWithNoise(plane, noise))
 		}
 	}
-	return TestData{numOfPlanes: len(planes), planes: planes, points: points}
+	return TestData{NumOfPlanes: len(planes), Planes: planes, Points: points}
 }

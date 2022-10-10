@@ -8,7 +8,7 @@ import (
 // numberOfPlanes describes how many planes are in the test data, planes is
 // an array of the planes and points is an array of the sampled points.
 type TestData struct {
-	numOfPlanes int
-	planes      []geometry.Vector
-	points      []geometry.Vector
+	NumOfPlanes int
+	Planes      []geometry.Vector
+	Points      []geometry.Vector
 }

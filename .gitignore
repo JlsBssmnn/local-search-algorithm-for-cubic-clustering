@@ -4,3 +4,7 @@ temp/results
 .vscode
 helper_scripts/.ipynb_checkpoints/*
 helper_scripts/Untitled.ipynb
+visualization/dist
+visualization/.vscode/*
+visualization/node_modules/*
+

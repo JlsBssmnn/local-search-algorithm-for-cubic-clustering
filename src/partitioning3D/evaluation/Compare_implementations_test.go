@@ -66,8 +66,8 @@ func testForEquality(t *testing.T, firstAlgorithm, secondAlgorithm algorithm.Par
 	testData := GenerateDataWithNoise(*numOfPlanes, *pointsPerPlane, utils.NormalDist{Mean: *mean, Stddev: *stddev})
 	calc := partitioning3D.CostCalculator{Threshold: *threshold, Amplification: *amplification}
 
-	partAlg1 := firstAlgorithm(&testData.points, calc)
-	partAlg2 := secondAlgorithm(&testData.points, calc)
+	partAlg1 := firstAlgorithm(&testData.Points, calc)
+	partAlg2 := secondAlgorithm(&testData.Points, calc)
 
 	if len(partAlg1) != len(partAlg2) {
 		t.Logf("Partitioning arrays have different lengths")
